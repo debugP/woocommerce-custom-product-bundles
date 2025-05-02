@@ -1,0 +1,548 @@
+div#choose-scent {
+    margin-top: 15px;
+}
+
+#top input[type="checkbox"] {
+    display: table-cell;
+}
+
+bdi {/* MOD J */
+    white-space: nowrap;
+}
+
+.ingredient-category .product-label a { /* MOD J https://profumo.it/kit-del-profumiere/ */
+    text-align: left !important;
+    color: #222 !important;
+    font-size: 16px !important;
+}
+
+table.ingredient-category span.product-label a:hover { text-decoration: underline !important; color: #a81010 !important;} /* MOD J  KIT PROFUMIERE  */
+
+.questionnaire .error-field{
+	border: 1px solid #ff0000 !important;
+}
+.questionnaire .required{
+	margin-left: 5px !important;
+	font-size: 15px !important;
+	color: #ff0000 !important;
+}
+
+.shop_columns_6 .products .product {
+  	margin: 0 1% 1% 0;
+  	width: 15.83%;	
+}
+
+#top .thumbnail_container img.attachment-bundle_thumbnail{
+  	width: 90px;
+	height: 90px;
+	margin: 15px auto;
+}
+
+#top .thps_shop_columns .inner_product{
+	border:0;
+}
+
+#top .thps_shop_columns .inner_product_header{
+  	text-align: center;
+	border:0;
+}
+#top #wrap_all .main_color h3.product-name{
+	font-size: 17px;
+    color: #555555;
+    font-weight: bold;
+}
+#top .thps_shop_columns .price, #top .thps-actions-row .price{
+	display: inline;
+	font-size: 18px !important;
+    color: #555555;
+}
+#top .thps_shop_columns .price span.amount, #top .ingredient-category .price span.amount, #top .ingredient-category span.amount{
+	font-size: 18px !important;
+}
+#top .thps-actions-row .amount{
+	font-size: 18px !important;
+}
+
+.thps_shop_columns{
+	width: fit-content;  /* MOD J pagina perfumer-kit-custom-perfume/ altrimenti il checkbox sparisce */
+}
+
+.thps-actions-row{
+	height: 35px;
+	margin-bottom: 10px;
+	clear: both;
+}
+
+.thps-actions-row span.thps-actions-column{
+	float:right;
+}
+
+.thps-products{
+	overflow: hidden;
+  	margin-bottom: 0px;
+}
+
+.questionnaire{
+	clear: both;
+}
+.captcha-img{
+	border: 1px solid gray;
+}
+.captcha-field{
+	width: 200px;
+}
+
+table.ingredient-category {
+    width: fit-content;
+}
+
+.ingredient-category th{
+	font-size: 13px;
+}
+.ingredient-category td{
+	font-size: 14px;
+}
+.ingredient-category td.product-name span.amount{
+	font-size: 14px!important;
+	display:inline;
+}
+
+.ingredient-category .right-align{ text-align:right; white-space: nowrap; }
+.ingredient-category .left-align{ text-align:left; }
+.ingredient-category .center-align{ text-align:center; }
+.ingredient-category .valign-middle{ vertical-align:middle; }
+.ingredient-category .product-thumbnail{
+	padding-right: 7px;
+	width: 20px;
+	display:table-cell;
+	text-align:center;
+	vertical-align:middle;
+	line-height:normal;
+}
+/* MOD JAMALUDDIN */
+
+ul.products li.product .ingredient-category .product-thumbnail img{
+	margin:0;
+	max-width: none;
+}
+	
+.ingredient-category .product-label {
+	display:table-cell;
+	vertical-align:middle;
+	line-height:normal;
+}
+
+/************************** 
+ * Products dropdown style
+ **************************/
+.thps-products-dropdown-div {
+	clear: both;
+    position: relative;
+	margin-bottom: -26px;
+    margin-top: -19px;
+}
+.entry-content-wrapper .thps-products-dropdown-div {
+/*    padding-bottom: 29px; */
+    padding-top: 9px;
+}
+.thps-products-dropdown-div p{ font-size: 20px; margin-bottom: 10px;}
+#top .main_color select.products-dropdown{
+	-webkit-appearance: none;
+	-moz-appearance: none;
+	appearance: none;
+    font-size: 19px;
+    width: 300px;
+	height: 20px;
+    color: #000000;
+    font-weight: 300;
+    background: #fcfcfc;
+/*	background: #fcfcfc url('arrow_down.png') right center no-repeat;*/
+    border: 2px double #a81010;
+    margin: 0px auto;
+    padding: 10px 15px;
+}
+#top .main_color select.thps-product-category-dropdown {
+	-webkit-appearance: none;
+	-moz-appearance: none;
+	appearance: none;
+    font-size: 21px;
+    width: 400px;
+	height: 40px;
+    color: #000000;
+    font-weight: 300;
+    background: #fcfcfc;
+/*	background: #fcfcfc url('arrow_down.png') right center no-repeat;*/
+    border: 8px double #a81010;
+    margin: 0px auto;
+    padding: 10px 15px;
+	background-image: none;
+}
+
+
+/* ################# MOD J #############################*/
+.main_color .thps-products-dropdown-div table {
+	/*margin-right: 50%; 
+    margin-left: 50%;*/
+}
+.selectdiv {
+    position: relative;
+    font-size: 9px;
+	margin: 31px auto -56px auto;
+}
+
+.jmb-selectdiv {
+    position: relative;
+    font-size: 9px;
+	margin: 24px auto -17px auto;
+}
+
+/*To remove button from IE11, thank you Matt */
+select::-ms-expand {
+     display: none;
+}
+
+.selectdiv::after {
+	content: '\25bc';
+	font: 20px "Consolas", monospace;
+	color: #333;
+	padding: 0 0 2px;
+	position: relative;
+	pointer-events: none;
+}
+
+.jmb-selectdiv::after {
+	content: '\25bc';
+	font: 20px "Consolas", monospace;
+	color: #333;
+	padding: 0 0 2px;
+	position: relative;
+	pointer-events: none;
+}
+
+.selectdiv select {
+  -webkit-appearance: none;
+  -moz-appearance: none;
+  appearance: none;
+  
+  display: block;
+  width: 100%;
+  height: 50px;
+  margin: 5px 0px;
+  padding: 0px 24px;
+  font-size: 17px;
+  line-height: 1.75;
+  color: #333;
+  background-color: #ffffff;
+  background-image: none;
+  border: 1px solid #cccccc;
+  -ms-word-break: normal;
+  word-break: normal;
+}
+
+.jmb-selectdiv select {
+  -webkit-appearance: none;
+  -moz-appearance: none;
+  appearance: none;
+  
+  display: block;
+  width: 100%;
+  height: 50px;
+  margin: 5px 0px;
+  padding: 0px 24px;
+  font-size: 17px;
+  line-height: 1.75;
+  color: #333;
+  background-color: #ffffff;
+  background-image: none;
+  border: 1px solid #cccccc;
+  -ms-word-break: normal;
+  word-break: normal;
+}
+/*
+#custom-select select {
+	appearance: none;
+	-webkit-appearance: none;
+	-moz-appearance: none;
+	
+	width: 100%;
+	padding: 0 10px;
+}
+
+#custom-select {
+	position: relative;
+	left: 33%; 
+}
+
+#custom-select select, #custom-select::after {
+	height: 40px;
+}
+
+#custom-select::after {
+	content: "\25bc";
+    position: absolute;
+    top: 26px;
+    right: -36px;
+    padding: 0 10px;
+    line-height: 40px;
+    font-size: 17px;
+}
+*/
+/* ################# MOD J #############################*/
+
+
+
+ 
+.main_color .thps-products-dropdown-div table{
+	width:auto;
+	border:0;
+	background:none;	
+}
+.thps-products-dropdown-div table tr, .thps-products-dropdown-div table tbody, .thps-products-dropdown-div table tr:nth-child(odd){
+	background:none;
+}
+.thps-products-dropdown-div table tr td {
+	background:none;
+	padding:0;
+    border: 0px;
+	vertical-align:middle;
+}
+
+@media only screen and (min-width: 990px) {
+	.jmb-products-dropdown-div p { /* per portare piu' su il menu a tendina nella pagina del prodotto  */
+		margin-top: -5px;
+		font-weight: bold;
+		font-size: 22px;
+	}
+}
+
+@media only screen and (min-width: 780px) and (max-width: 989px) { /* MOD J */
+	#top .main_color select.thps-products-dropdown  {
+		font-size: 21px !important;
+		width: 223px !important;
+		-webkit-appearance: none;
+		-moz-appearance: none;
+		appearance: none;
+		background-image: none;
+	}
+	.selectdiv::after {
+		font: 16px Consolas,monospace;
+		right: -107px;
+		top: -49px;
+	}
+	.jmb-selectdiv::after {
+		font: 16px Consolas,monospace;
+		right: -107px;
+		top: -49px;
+	}
+}
+
+@media only screen and (min-width: 990px) and (max-width: 1380px) { /* MOD J */
+	#top .main_color select.thps-products-dropdown  {
+		font-size: 21px !important;
+		width: 285px !important;
+		-webkit-appearance: none;
+		-moz-appearance: none;
+		appearance: none;
+		background-image: none;
+	}
+	.selectdiv::after {
+		font: 21px Consolas,monospace;
+		right: -135px;
+		top: -71px;
+	}
+	.jmb-selectdiv::after {
+		font: 24px Consolas,monospace;
+		right: -218px;
+		top: -58px;
+	}
+}
+
+@media only screen and (min-width: 1380px) { /* MOD J */
+	#top .main_color select.thps-products-dropdown  {
+		padding-left: 8px;
+		font-size: 23px !important;
+		width: 444px !important;
+		-webkit-appearance: none;
+		-moz-appearance: none; 
+		appearance: none;
+		background-image: none;
+	}
+	.selectdiv::after {
+		font: 25px Consolas,monospace;
+		right: -211px;
+		top: -74px;
+	}
+	.jmb-selectdiv::after {
+		font: 25px Consolas,monospace;
+		right: -211px;
+		top: -59px;
+	}
+}
+
+
+@media only screen and  (min-width: 768px) { /* MOD J */
+	.thps-products-dropdown-div {
+		margin-bottom: 26px;
+	}
+	
+	#top .main_color select.thps-products-dropdown  {
+		width: 211px;
+		font-size: 20px;
+		padding-left: 3px;
+		padding-right: 0px;
+	    border: 6px double #a81010;
+		color: #333333;
+		-webkit-appearance: none;
+		-moz-appearance: none;
+		appearance: none;
+		background-image: none;
+	}
+	.thps-products-dropdown::after {
+		font: 23px Consolas,monospace;
+		right: -211px;
+		top: -74px;
+	}
+		
+	#top .main_color select.thps-product-category-dropdown {
+		font-size: 27px;
+		width: 440px;
+		height: 53px;
+	}
+}
+
+@media only screen and (min-width: 640px) and (max-width: 989px) { /* MOD J */
+	.shop_columns_6 .products .product {
+		width: 32%;
+	}
+	.selectdiv::after {
+		font: 17px Consolas,monospace;
+		right: -104px;
+		top: -70px;
+	}
+	.jmb-selectdiv::after {
+		font: 23px Consolas,monospace;
+		right: -221px;
+		top: -57px;
+	}
+}
+
+@media only screen and (max-width: 767px) { /* MOD J */
+    .jmb-selectdiv {
+        margin: 38px auto -17px auto;
+    }
+	#top .main_color select.thps-products-dropdown  {
+		margin-bottom: 39px;
+		width: 300px;
+		padding-left: 10px;
+		padding-right: 0px;
+	    border: 6px double #a81010;
+		color: #333333;
+		-webkit-appearance: none;
+		-moz-appearance: none;
+		appearance: none;
+		background-image: none;
+	}
+	
+	#top .main_color select.thps-product-category-dropdown {
+		font-size: 18px;
+		width: 300px;
+		padding-left: 10px;
+		padding-right: 0px;
+/*		.selectdiv::after { right: -140px; }*/
+	}
+	.thps_shop_columns{
+		width: auto;  /* MOD J pagina perfumer-kit-custom-perfume/ (e mignon) */
+	}
+	.shop_columns_2 .products .product { width: 23.5%; }
+	.shop_columns_3 .products .product { width: 47% !important; }
+	#top #main .responsive .products .product {   /* MOD J */
+		width: 48% !important;
+		float: left;
+	}
+}
+
+@media only screen and (min-width: 481px) and (max-width: 767px) { /* MOD J */
+	#top .main_color select.thps-products-dropdown  {
+		margin-bottom: 39px;
+		font-size: 22px; 
+		width: 386px;
+		padding-left: 10px;
+		padding-right: 0px;
+	    border: 6px double #a81010;
+		color: #333333;
+		-webkit-appearance: none;
+		-moz-appearance: none;
+		appearance: none;
+		background-image: none;
+	}
+	.selectdiv::after {
+		right: -182px;
+		top: -108px;
+	}
+	.jmb-selectdiv::after {
+		right: -141px; 
+		top: -50px;
+	}
+}
+
+@media only screen and (min-width: 640px) and (max-width: 1023px) { /* MOD J */
+	.shop_columns_6 .products .product {
+		width: 32%;
+	}
+}
+
+
+@media only screen and (min-width: 1024px) and (max-width: 1279px) { /* MOD J */
+	.thps_shop_columns {
+		width: auto;
+		margin-right: 35px;
+		margin-left: -35px;
+	}
+}
+
+@media only screen and (min-width: 381px) and (max-width: 480px) { /* MOD J */
+	.shop_columns_3.thps_shop_columns { /* MOD J pagina perfumer-kit-custom-perfume/ (e mignon) altrimenti il checkbox sparisce */
+		width: fit-content;
+	}
+	select.thps-products-dropdown {
+		font-size: 22px !important;
+	}
+	.selectdiv::after {
+		right: -143px;	
+		top: -109px;
+	}
+	.jmb-selectdiv::after {
+		right: -143px;	
+		top: -50px;
+	}
+}
+
+@media only screen and (min-width: 768px) and (max-width: 1279px) { /* MOD J pagina perfumer-kit-custom-perfume/ (e mignon) altrimenti il checkbox sparisce */
+	.shop_columns_2 .products .product { width: 23.5%; }
+	.shop_columns_3 .products .product { width: 47% !important; }
+	.thps-actions-row { margin-right: 68px;} 
+}
+
+@media only screen and (min-width: 1280px) { 
+	.thps_shop_columns{
+		width: auto;  /* MOD J pagina perfumer-kit-custom-perfume/ (e mignon) altrimenti il checkbox sparisce */
+	}
+}
+
+@media only screen and (max-width: 380px) { /* MOD J */
+	#top .main_color select.thps-product-category-dropdown, #top .main_color select.thps-products-dropdown {
+		font-size: 16px;
+		width: 253px;
+		padding-left: 6px;
+	}
+	.selectdiv::after {
+		font-size: 19px;
+		right: -120px;
+	    top: -108px;
+	}
+	.jmb-selectdiv::after {
+		font-size: 19px;
+		right: -120px;
+	    top: -47px;
+	}
+}

@@ -1,0 +1,1649 @@
+<?php
+defined( 'ABSPATH' ) OR exit;
+/**
+ * Plugin Name: WooCommerce Custom Product Bundles
+ * Description: WooCommerce Custom Product Bundles view.
+ * Author:      ThemeHiGH
+ * Version:     1.0.1
+ * Author URI:  http://www.themehigh.com
+ * Plugin URI:  http://www.themehigh.com
+ * Text Domain: woocommerce-custom-product-bundles
+ * Domain Path: /languages
+ */
+
+add_action('wp_enqueue_scripts', 'thps_woo_custom_product_bundles_enqueue_scripts');
+function thps_woo_custom_product_bundles_enqueue_scripts() {
+	wp_register_style ('thps-woo-custom-product-bundles-style', plugins_url( '/assets/css/thps-woo-custom-product-bundle.css', __FILE__ ));
+	wp_register_script('thps-woo-custom-product-bundles-script', plugins_url( '/assets/js/thps-woo-custom-product-bundle.js', __FILE__ ), array('jquery'));
+	wp_register_script('google-recaptcha', "https://www.google.com/recaptcha/api.js");
+}
+
+function thps_woo_custom_product_bundles_scripts() {
+	wp_enqueue_style  ('thps-woo-custom-product-bundles-style');
+	wp_enqueue_style  ('wp-jquery-ui-dialog');
+
+	wp_enqueue_script ('google-recaptcha');
+	wp_enqueue_script ('jquery-ui-dialog');
+	wp_enqueue_script ('thps-woo-custom-product-bundles-script');
+
+	wp_localize_script('thps-woo-custom-product-bundles-script', 'thps_ajax_object', array( 'ajax_url' => admin_url( 'admin-ajax.php' ) ) );
+	wp_localize_script('thps-woo-custom-product-bundles-script', 'objectL10n', array(
+		'max_allowed'  		=> __( 'Please select maximum %d fragrances', 'woocommerce-custom-product-bundles' ),
+		'min_required' 		=> __( 'Please select at least %d fragrances', 'woocommerce-custom-product-bundles' ),
+		'email_required' 	=> __( 'E-mail is required', 'woocommerce-custom-product-bundles' ),
+		'invalid_email'		=> __( 'Please enter a valid email', 'woocommerce-custom-product-bundles' ),
+		'fill_req_fields' 	=> __( 'Please fill required fileds', 'woocommerce-custom-product-bundles' ),
+	));
+}
+
+function thps_load_plugin_textdomain() {
+  	load_plugin_textdomain( 'woocommerce-custom-product-bundles', false, dirname( plugin_basename( __FILE__ ) ) . '/languages/' );
+}
+add_action( 'plugins_loaded', 'thps_load_plugin_textdomain' );
+
+include_once(ABSPATH.'wp-admin/includes/plugin.php');
+
+
+/**
+ * WooCommerce Custom Product Kit
+ * -------------------------------
+ *
+ * Register a shortcode displays products from given variations and categories.
+ *
+ * Use: [woo_product_kit category="olfactory-jewels"]
+ *
+ */
+add_shortcode('woo_product_kit', 'thps_woo_custom_product_kit');
+function thps_woo_custom_product_kit($atts) {
+	thps_woo_custom_product_bundles_scripts();
+
+	extract(shortcode_atts(array(
+		'bundle_name'		=> '',
+    	'categories' 		=> 'olfactory-jewels',
+		'exclude_categories'=> 'private-collection',
+		'attribute_name'    => 'size',
+		'variations'		=> 'mignon-55-ml-eau-de-parfum',
+		'min_fragrances'	=> 5,
+		'max_fragrances'	=> -1,
+		'id'				=> '',
+		'per_row' 			=> 6,
+		'per_page' 			=> -1,
+		'orderby' 			=> 'title',
+		'order' 			=> 'ASC',
+   	), $atts));
+
+	$categories 		= convertStringToArray($categories);
+	$exclude_categories = convertStringToArray($exclude_categories);
+	$variations 		= convertStringToArray($variations);
+	$attribute_name		= 'pa_'.$attribute_name;
+
+	if (is_array($categories)  && is_array($exclude_categories) ){
+		$exclude_categories = array_diff($exclude_categories, $categories);
+	}
+
+	$parent_products_ids = thps_get_product_ids( $categories, $exclude_categories );
+	$args = array(
+		'post_type' 		=> 'product_variation',
+		'post_parent__in' 	=> $parent_products_ids,
+		'meta_key' 			=> 'attribute_'.$attribute_name,
+		'meta_value' 		=> $variations,
+		'meta_compare' 		=> 'IN',
+		'post_status'		=> array( 'publish', 'private' ),
+		'posts_per_page' 	=> $per_page,
+		'orderby' 			=> $orderby,
+		'order' 			=> $order
+	);
+
+	$bundle_product = new WC_Product($id);
+    $products 		= new WP_Query( $args );
+	sortProductVariations($products);
+
+	$index = 0;
+
+	ob_start();
+
+	echo('<form id="thps_product_bundle_'. $id .'" class="thps_product_bundle" method="post" enctype="multipart/form-data">');
+	thps_modal_box();
+	//thps_actions_row( $bundle_name, $bundle_product, 'sample-kit', $min_fragrances, $max_fragrances );
+	thps_display_products_grid($id, $products, $per_row, $index);
+	echo('<input type="hidden" name="has_questionnaire" value="false" />');
+	thps_secure_captcha();
+	thps_actions_row( $bundle_name, $bundle_product, 'sample-kit', $min_fragrances, $max_fragrances );
+	echo('</form>');
+
+    wp_reset_query();
+	return ob_get_clean();
+}
+
+/**
+ * WooCommerce Custom Product Kit
+ * -------------------------------
+ *
+ * Register a shortcode displays products from given variations and categories.
+ *
+ * Use: [custom_perfume category="olfactory-jewels"]
+ *
+ */
+add_shortcode('custom_perfume', 'thps_woo_custom_perfume');
+function thps_woo_custom_perfume($atts) {
+	thps_woo_custom_product_bundles_scripts();
+
+	extract(shortcode_atts(array(
+		'bundle_name'					=> '',
+    	'category' 						=> 'perfumetherapy',
+		'exclude_categories'			=> '',
+		'attribute_name'    			=> 'size',
+		'variations'					=> '135-ml-eau-de-parfum,135-ml-tincture,135-ml-absolute',
+		'accessories_attribute_name' 	=> 'quantity',
+		'accessories_attributes' 		=> '9-vials-15-ml-with-funnel,40-vials-1-5-ml-with-funnel',
+		'min_fragrances'				=> 5,
+		'max_fragrances'				=> -1,
+		'show_img' 						=> true,
+		'img_width'						=> '40px',
+		'img_height'					=> '40px',
+		'id'							=> '',
+		'per_row' 						=> 2,
+		'per_page' 						=> -1,
+		'orderby' 						=> 'title',
+		'order' 						=> 'ASC',
+   	), $atts));
+
+	$exclude_categories = convertStringToArray($exclude_categories);
+	$variations 		= convertStringToArray($variations);
+	$attribute_name		= 'pa_'.$attribute_name;
+	$show_img 			= ($show_img === true || (int)$show_img === 1 || $show_img === 'true') ? true : false;
+
+	$bundle_product = new WC_Product($id);
+	$IDbyNAME 		= get_term_by('name', $category, 'product_cat');
+ 	$category_id 	= $IDbyNAME->term_id;
+
+	$max_cols = $per_row;
+	$index = 0;
+
+	$subcatsargs = array(
+		'hierarchical' 		=> 1,
+		'show_option_none' 	=> '',
+		'hide_empty' 		=> 0,
+		'parent' 			=> $category_id,
+		'taxonomy' 			=> 'product_cat'
+	);
+	$subcats = get_categories($subcatsargs);
+
+	$fragrance_ids = array();
+
+	ob_start();
+
+	echo('<form id="thps_product_bundle_'. $id .'" class="thps_product_bundle" method="post" enctype="multipart/form-data">');
+	thps_modal_box();
+	//thps_actions_row( $bundle_name, $bundle_product, 'custom-perfume', $min_fragrances, $max_fragrances );
+
+	echo('<div class="shop_columns_'. $per_row .' thps_shop_columns">');
+	echo('<ul class="products thps-products">');
+
+	$subcategories_products = array();
+	foreach ($subcats as $subcat):
+		if(!in_array($subcat->slug, $exclude_categories)){
+			$parent_products_ids = thps_get_product_ids_by_category( $subcat->slug );
+
+			if(!empty($parent_products_ids)){
+				$prodargs = array(
+					'post_type' 		=> 'product_variation',
+					'post_parent__in' 	=> $parent_products_ids,
+					'meta_key' 			=> 'attribute_'.$attribute_name,
+					'meta_value' 		=> $variations,
+					'meta_compare' 		=> 'IN',
+					'post_status'		=> array( 'publish', 'private' ),
+					'posts_per_page' 	=> $per_page,
+					'orderby' 			=> $orderby,
+					'order' 			=> $order,
+				);
+
+				$subcat_products = new WP_Query( $prodargs );
+				sortProductVariations($subcat_products);
+
+				if($subcat_products->have_posts()){
+					$subcategories_products[$subcat->name] = $subcat_products;
+				}
+				wp_reset_query();
+			}
+		}
+	endforeach;
+
+	$subcategories_products = sortProductListByCount($subcategories_products);
+	foreach ($subcategories_products as $title => $subcat_product_list):
+		if($subcat_product_list->have_posts()){
+			$col_index = $index == 0 ? 0 : $index % $max_cols;
+
+			if($col_index == 0){
+				$product_class = "first";
+			}else if($col_index == ($max_cols-1)){
+				$product_class = "last";
+			}else{
+				$product_class = "";
+			}
+			$index 	= $index + 1;
+
+			$fragrance_ids = thps_display_products_list($id, $subcat_product_list, $fragrance_ids, true, true, false, 'product_variation', $title,
+			$product_class, false, $show_img, $img_width, $img_height);
+		}
+	endforeach;
+
+	$accessories_attributes = convertStringToArray($accessories_attributes);
+	$accessoriesargs = array(
+		'post_type' 	=> 'product',
+		'tax_query' 	=> array(
+							array(
+								'taxonomy' 		=> 'pa_' . $accessories_attribute_name,
+								'terms' 		=> $accessories_attributes,
+								'field' 		=> 'slug',
+								'operator' 		=> 'IN'
+							)
+						),
+		'post_status'	=> array( 'publish', 'private' ),
+		'posts_per_page'=> $per_page,
+		'orderby' 		=> $orderby,
+		'order' 		=> $order,
+	);
+	$accessories = new WP_Query( $accessoriesargs );
+
+	if($accessories->have_posts()){
+		sortProductVariations($accessories);
+
+		$col_index = $index == 0 ? 0 : $index % $max_cols;
+
+		if($col_index == 0){
+			$product_class = "first";
+		}else if($col_index == ($max_cols-1)){
+			$product_class = "last";
+		}else{
+			$product_class = "";
+		}
+		$index 	= $index + 1;
+
+		thps_display_products_list($id, $accessories, '', true, true, false, 'product', 'Accessories', $product_class, true, $show_img, $img_width, $img_height);
+	}
+	wp_reset_query();
+
+	echo('</ul>');
+	thps_secure_captcha();
+	echo('</div>');
+	echo('<input type="hidden" name="has_questionnaire" value="false" />');
+	thps_actions_row( $bundle_name, $bundle_product, 'custom-perfume', $min_fragrances, $max_fragrances );
+	echo('</form>');
+
+    wp_reset_query();
+	return ob_get_clean();
+}
+
+/**
+ * WooCommerce Custom Product Kit
+ * -------------------------------
+ *
+ * Register a shortcode displays products from given variations and categories.
+ *
+ * Use: [perfume_therapy category="olfactory-jewels"]
+ *
+ */
+add_shortcode('perfume_therapy', 'thps_woo_perfume_therapy');
+function thps_woo_perfume_therapy($atts) {
+	thps_woo_custom_product_bundles_scripts();
+	$_locale = get_locale();
+
+	extract(shortcode_atts(array(
+		'bundle_name'		=> '',
+    	'category' 			=> 'perfumetherapy',
+		'exclude_categories'=> '',
+		'attribute_name'    => 'size',
+		'variations'		=> '135-ml-eau-de-parfum,135-ml-tincture,135-ml-absolute',
+		'rare_variations' 	=> 'personalized-rare-fragrances',
+		'min_fragrances'	=> 3,
+		'max_fragrances'	=> 7,
+		'show_img' 			=> true,
+		'img_width'			=> '40px',
+		'img_height'		=> '40px',
+		'id'				=> '',
+		'per_row' 			=> 4,
+		'per_page' 			=> -1,
+		'orderby' 			=> 'title',
+		'order' 			=> 'ASC',
+   	), $atts));
+
+	$exclude_categories = convertStringToArray($exclude_categories);
+	$variations 		= convertStringToArray($variations);
+	$attribute_name		= 'pa_'.$attribute_name;
+	$show_img 			= ($show_img === true || (int)$show_img === 1 || $show_img === 'true') ? true : false;
+
+	$bundle_product = new WC_Product($id);
+	$IDbyNAME 		= get_term_by('name', $category, 'product_cat');
+ 	$category_id 	= $IDbyNAME->term_id;
+
+	$max_cols = $per_row;
+	$index = 0;
+
+	$subcatsargs = array(
+		'hierarchical' 		=> 1,
+		'show_option_none' 	=> '',
+		'hide_empty' 		=> 0,
+		'parent' 			=> $category_id,
+		'taxonomy' 			=> 'product_cat'
+	);
+	$subcats = get_categories($subcatsargs);
+
+	$rarefragranceargs = array(
+		'post_type' 		=> 'product_variation',
+		'meta_key' 			=> 'attribute_'.$attribute_name,
+		'meta_value' 		=> $rare_variations,
+		'meta_compare' 		=> 'IN',
+		'post_status'		=> array( 'publish', 'private' ),
+		'posts_per_page' 	=> $per_page,
+		'orderby' 			=> $orderby,
+		'order' 			=> $order,
+	);
+	$rare_fragrances = new WP_Query( $rarefragranceargs );
+
+	$rare_fragrance_ids = array();
+	while ( $rare_fragrances->have_posts() ) : $rare_fragrances->the_post(); global $product, $post;
+		$rare_fragrance_ids[] = $post->post_parent;
+	endwhile;
+
+	ob_start();
+
+	echo('<form id="thps_product_bundle_'. $id .'" class="thps_product_bundle" method="post" enctype="multipart/form-data">');
+	thps_modal_box();
+	//thps_actions_row( $bundle_name, $bundle_product, 'perfume-therapy', $min_fragrances, $max_fragrances);
+
+	echo('<div class="questionnaire">');
+	_e( '1. Indicate the essences that you would like to enter into the composition of your bespoke perfume', 'woocommerce-custom-product-bundles' );
+	echo('<p align="center">');
+	printf( __( 'Maximum %d fragrances', 'woocommerce-custom-product-bundles' ), $max_fragrances );
+	echo('</p>');
+	echo('</div>');
+
+	echo('<div class="shop_columns_'. $per_row .' thps_shop_columns">');
+	echo('<ul class="products thps-products">');
+
+	$subcategories_products = array();
+	foreach ($subcats as $subcat):
+		if(!in_array($subcat->slug, $exclude_categories)){
+			$parent_products_ids = thps_get_product_ids_by_category( $subcat->slug );
+
+			if(!empty($parent_products_ids)){
+				$prodargs = array(
+					'post_type' 		=> 'product_variation',
+					'post_parent__in' 	=> $parent_products_ids,
+					'meta_key' 			=> 'attribute_'.$attribute_name,
+					'meta_value' 		=> $variations,
+					'meta_compare' 		=> 'IN',
+					'post_status'		=> array( 'publish', 'private' ),
+					'posts_per_page' 	=> $per_page,
+					'orderby' 			=> $orderby,
+					'order' 			=> $order,
+				);
+
+				$subcat_products = new WP_Query( $prodargs );
+				sortProductVariations($subcat_products);
+
+				if($subcat_products->have_posts()){
+					$subcategories_products[$subcat->name] = $subcat_products;
+				}
+				wp_reset_query();
+			}
+		}
+	endforeach;
+
+	$subcategories_products = sortProductListByCount($subcategories_products);
+	foreach ($subcategories_products as $title => $subcat_products):
+		if($subcat_products->have_posts()){
+			$col_index = $index == 0 ? 0 : $index % $max_cols;
+
+			if($col_index == 0){
+				$product_class = "first";
+			}else if($col_index == ($max_cols-1)){
+				$product_class = "last";
+			}else{
+				$product_class = "";
+			}
+			$index 	= $index + 1;
+
+			$rare_fragrance_ids = thps_display_products_list($id, $subcat_products, $rare_fragrance_ids, false, false, false, 'product_variation', $title,
+			$product_class, false, $show_img, $img_width, $img_height);
+		}
+	endforeach;
+
+	if($rare_fragrances->have_posts()){
+		sortProductVariations($rare_fragrances);
+
+		$col_index = $index == 0 ? 0 : $index % $max_cols;
+
+		if($col_index == 0){
+			$product_class = "first";
+		}else if($col_index == ($max_cols-1)){
+			$product_class = "last";
+		}else{
+			$product_class = "";
+		}
+		$index 	= $index + 1;
+
+		thps_display_products_list($id, $rare_fragrances, '', false, true, true, 'product_variation', 'RARE FRAGRANCES', $product_class, false,
+		$show_img, $img_width, $img_height);
+	}
+	wp_reset_query();
+
+	$qstn2 = isset($_POST['qstn2']) ? $_POST['qstn2'] : '';
+	$qstn3 = isset($_POST['qstn3']) ? $_POST['qstn3'] : '';
+	$qstn4 = isset($_POST['qstn4']) ? $_POST['qstn4'] : '';
+	$qstn5 = isset($_POST['qstn5']) ? $_POST['qstn5'] : '';
+	$qstn6 = isset($_POST['qstn6']) ? $_POST['qstn6'] : '';
+	$email = isset($_POST['emailAddress']) ? $_POST['emailAddress'] : '';
+
+	echo('</ul>');
+	echo('</div>');
+
+	echo('<div class="questionnaire">');
+	_e('2. Name the three most important essences of your choice', 'woocommerce-custom-product-bundles');
+	echo('<label class="required">*</label>');
+	echo('<br/>');
+	echo('<textarea name="qstn2">'. htmlspecialchars($qstn2) .'</textarea>');
+	echo('</div>');
+
+	echo('<div class="questionnaire">');
+	_e('3. If you already know our', 'woocommerce-custom-product-bundles');
+	if($_locale == "it_IT"){
+		$_link = "https://profumo.it/profumeria/gioielli-olfattivi/";
+	}else{
+		$_link = "https://attarperfumes.net/fragrances/olfactory-jewels/";
+	}
+	echo(' <a href="'. $_link .'" target="_blank">'. __('Scents of the Soul', 'woocommerce-custom-product-bundles') .'</a>, ');
+	_e('which one do you prefer?', 'woocommerce-custom-product-bundles');
+	echo('<br/>');
+	echo('<textarea name="qstn3">'. htmlspecialchars($qstn3) .'</textarea>');
+	echo('</div>');
+
+	echo('<div class="questionnaire">');
+	_e('4. Your profession or field of work (important for olfactory psychology)', 'woocommerce-custom-product-bundles');
+	echo('<label class="required">*</label>');
+	echo('<br/>');
+	echo('<textarea name="qstn4">'. htmlspecialchars($qstn4) .'</textarea>');
+	echo('</div>');
+
+	echo('<div class="questionnaire">');
+	_e('5. Choose the name of your fragrance', 'woocommerce-custom-product-bundles');
+	echo('<label class="required">*</label>');
+	echo('<br/>');
+	echo('<textarea name="qstn5">'. htmlspecialchars($qstn5) .'</textarea>');
+	echo('</div>');
+
+	echo('<div class="questionnaire">');
+	_e('6. Make comments, give your skype for contact ecc...', 'woocommerce-custom-product-bundles');
+	echo('<br/>');
+	echo('<textarea name="qstn6">'. htmlspecialchars($qstn6) .'</textarea>');
+	echo('</div>');
+
+	echo('<div class="questionnaire">');
+	_e('7. E-mail', 'woocommerce-custom-product-bundles');
+	echo('<label class="required">*</label>');
+	echo('<br/>');
+	echo('<input type="text" name="emailAddress" value="'. htmlspecialchars($email) .'"/>');
+	echo('</div>');
+
+	thps_secure_captcha();
+	echo('<input type="hidden" name="has_questionnaire" value="true" />');
+
+	thps_actions_row( $bundle_name, $bundle_product, 'perfume-therapy', $min_fragrances, $max_fragrances);
+	echo('</form>');
+
+    wp_reset_query();
+	return ob_get_clean();
+}
+
+/**
+ * WooCommerce Products Select List
+ * --------------------------------
+ *
+ * Register a shortcode displays products in a select list for a given set of categories.
+ *
+ * Use: [perfume_therapy category="olfactory-jewels"]
+ *
+ */
+add_shortcode('products_select_list', 'thps_products_select_list');
+function thps_products_select_list($atts) {
+	thps_woo_custom_product_bundles_scripts();
+
+	extract(shortcode_atts(array(
+    	'categories' 		=> 'perfumetherapy, raw-materials-for-perfumery',
+		'exclude_categories'=> '',
+		'orderby' 			=> 'title',
+		'order' 			=> 'ASC',
+		'per_page' 			=> -1,
+		'align'				=> 'left',
+   	), $atts));
+
+	$categories 		= convertStringToArray($categories);
+	$exclude_categories = convertStringToArray($exclude_categories);
+
+	if (is_array($categories)  && is_array($exclude_categories) ){
+		$exclude_categories = array_diff($exclude_categories, $categories);
+	}
+
+	$products = thps_get_products( $categories, $exclude_categories, $orderby, $order, $per_page);
+
+	$style = array();
+	$style['align'] = $align;
+
+	ob_start();
+
+	thps_display_products_as_select_list($products, $style);
+    wp_reset_query();
+	return ob_get_clean();
+}
+
+function thps_display_products_select_list_by_category_slug($category_slug, $categories){
+	if(!empty($category_slug) && is_array($categories)){
+		$categories_in  = array();
+		foreach($categories as $category){
+			$subcategories   = thps_get_sub_categories_slug_list($category);
+
+			if(in_array($category_slug, $subcategories) || ($category_slug === $category)){
+				$categories_in[] = $category;
+			}
+		}
+
+		if(!empty($categories_in)){
+			$categories_str = "";
+			foreach($categories_in as $category){
+				if(!empty($category)){
+					if(!empty($categories_str)){
+						$categories_str .= ',';
+					}
+					$categories_str .= $category;
+				}
+			}
+			echo do_shortcode('[products_select_list categories="'.$categories_str.'"]');
+		}
+	}
+}
+
+function thps_display_products_select_list_by_category_slug_1($category_slug, $categories){
+	if(!empty($category_slug) && is_array($categories)){
+		$categories_in  = array();
+		foreach($categories as $category){
+			$categories_in[] = $category;
+			$subcategories   = thps_get_sub_categories_slug_list($category);
+			$categories_in   = array_merge($categories_in, $subcategories);
+		}
+
+		if(in_array($category_slug, $categories_in)){
+			echo do_shortcode('[products_select_list categories="'.$category_slug.'"]');
+		}
+	}
+}
+
+function thps_display_products_select_list_by_product_id($product_id, $categories){
+	$categories = thps_filter_categories($categories);
+
+	if(!empty($product_id) && is_array($categories)){
+		$_pf = new WC_Product_Factory();
+    	$_product = $_pf->get_product($product_id);
+
+		$product_cats 	= wp_get_post_terms( $product_id, 'product_cat' );
+		$category_slugs = array();
+
+		if($product_cats && !is_wp_error( $product_cats)){
+			foreach($product_cats as $cat){
+				$category_slugs[] = $cat->slug;
+			}
+		}
+
+		$categories_in  = array();
+		foreach($categories as $category){
+			$subcategories   = thps_get_sub_categories_slug_list($category);
+
+			$common_cat = array_intersect($category_slugs, $subcategories);
+			if(!empty($common_cat) || in_array($category, $category_slugs)){
+				$categories_in[] = $category;
+			}
+		}
+
+		if(!empty($categories_in)){
+			$categories_str = "";
+			foreach($categories_in as $category){
+				if(!empty($category)){
+					if(!empty($categories_str)){
+						$categories_str .= ',';
+					}
+					$categories_str .= $category;
+				}
+			}
+			echo do_shortcode('[products_select_list categories="'.$categories_str.'"]');
+		}
+	}
+}
+
+function thps_display_products_select_list_by_product_id_1($product_id, $categories){
+	if(!empty($product_id) && is_array($categories)){
+		$_pf = new WC_Product_Factory();
+    	$_product = $_pf->get_product($product_id);
+
+		$product_cats 	= wp_get_post_terms( $product_id, 'product_cat' );
+		$category_slugs = array();
+
+		if($product_cats && !is_wp_error( $product_cats)){
+			foreach($product_cats as $cat){
+				$category_slugs[] = $cat->slug;
+			}
+		}
+
+		$categories_in  = array();
+		foreach($categories as $category){
+			$categories_in[] = $category;
+			$subcategories   = thps_get_sub_categories_slug_list($category);
+			$categories_in   = array_merge($categories_in, $subcategories);
+		}
+
+		$category_slug = array_intersect($category_slugs, $categories_in);
+		if(is_array($category_slug) || is_object($category_slug)){
+			$category_slug_str = '';
+			foreach($category_slug as $slug) {
+				$category_slug_str .= $slug.',';
+			}
+
+			if(!empty($category_slug_str)){
+				echo do_shortcode('[products_select_list categories="'.$category_slug_str.'"]');
+			}
+		}
+	}
+}
+
+function thps_filter_categories($categories){
+	$cats = array();
+	if(!empty($categories) && is_array($categories)){
+		$referer = $_SERVER['HTTP_REFERER']; //wp_get_referer();
+
+		foreach($categories as $category) {
+			if(strpos($referer, $category) !== false) {
+				$cats[] = $category;
+			}
+		}
+
+		if(sizeof($cats) == 0){
+			$cats[] = $categories[0];
+		}
+		//print_r($referer); echo '<br/>::HTTP_REFERER::'; print_r($cats);
+	}
+	return sizeof($cats) > 0 ? $cats : $categories;
+}
+
+function thps_actions_row( $bundle_name, $product, $submit_btn_class, $min_fragrances, $max_fragrances ){
+	echo('<div class="thps-actions-row">');
+		echo('<span class="price amount">');
+			_e( 'Total', 'woocommerce-custom-product-bundles' );
+			echo (': '. get_woocommerce_currency_symbol() .'&nbsp;');
+			echo('<span class="amount bundle_total_display">');
+				echo $product->get_display_price();
+			echo('</span>');
+		echo('</span>');
+
+		$btn_disabled = empty($product->id) ? 'disabled' : '';
+		echo('<span class="thps-actions-column" style="margin-left: 50px;">');
+			echo('<input type="hidden" name="add-to-cart" class="bundle_prod_id" value="'. esc_attr( $product->id ) .'" />');
+			echo('<input type="hidden" name="product_type" class="product_type" value="product_bundle" />');
+			echo('<input type="hidden" name="bundle_initial_value" class="bundle_initial_value" value="'. $product->get_price() .'" />');
+			echo('<input type="hidden" name="bundle_initial_value" class="bundle_initial_display_value" value="'. $product->get_display_price() .'" />');
+			echo('<input type="hidden" name="bundle_total" class="bundle_total" value="" />');
+			echo('<input type="hidden" name="bundle_items" class="bundle_items" value="" />');
+			echo('<input type="hidden" name="bundle_name" class="bundle_name" value="'. $bundle_name .'" />');
+			echo('<input type="hidden" name="validation_min_req" class="min_required" value="'. $min_fragrances .'" />');
+			echo('<input type="hidden" name="validation_max_req" class="max_required" value="'. $max_fragrances .'" />');
+
+			echo('<button type="submit" class="single_add_to_cart_button button alt '. $submit_btn_class .'" '.$btn_disabled.'>');
+			_e( 'Add To Cart', 'woocommerce-custom-product-bundles' );
+			echo('</button>');
+		echo('</span>');
+	echo('</div>');
+}
+
+function thps_modal_box(){
+	echo('<div id="dialog-box">');
+	  	echo('<p id="dialog-box-msg"></p>');
+	echo('</div>');
+}
+
+function thps_display_products_grid($product_kit_id, $products, $max_cols, $index){
+	echo('<div class="shop_columns_'.$max_cols.' thps_shop_columns">');
+		echo('<ul class="products thps-products" style="margin-bottom:0;">');
+			while ( $products->have_posts() ) : $products->the_post(); global $product, $post;
+				$col_index = $index == 0 ? 0 : $index % $max_cols;
+
+				$product_class = "";
+				if($col_index == 0){
+					$product_class = "first";
+				}else if($col_index == ($max_cols-1)){
+					$product_class = "last";
+				}else{
+					$product_class = "";
+				}
+				$index 	= $index + 1;
+
+				$link   = get_permalink($product->id);
+				$checked= isset($_POST['price_'.$product->id]) ? 'checked="checked"' : '';
+
+				echo('<li class="product type-product '.$product_class.'">');
+					echo('<div class="inner_product main_color wrapped_style noLightbox av-product-class-">');
+						echo('<a href="'.$link.'" target="_blank">');
+							echo('<div class="thumbnail_container">');
+								$thumbnail_attr = array(
+									'class'	=> "attachment-bundle_thumbnail wp-post-image",
+									'alt'	=> trim( strip_tags( $product->post->post_title ) )
+								);
+
+								echo get_the_post_thumbnail( $product->id, 'shop_thumbnail', $thumbnail_attr );
+							echo('</div>');
+						echo('</a>');
+						echo('<div class="inner_product_header">');
+							echo('<a href="'.$link.'" target="_blank">');
+//								echo('<h3 class="product-name">'. $product->post->post_title .'</h3>');
+								echo('<h3 class="product-name">'. $product->get_title() .'</h3>');
+							echo('</a>');
+							echo('<span class="price product-price">'. $product->get_price_html() .'</span>');
+							echo('<span style="margin-left:5px;">');
+								echo('<input type="checkbox" name="price_'.$product->id.'" value="'.$product->get_price().'" class="item-price"
+								onclick="selectBundleItem(this,\''. $product_kit_id .'\')" '. $checked .' />');
+
+								echo('<input type="hidden" name="product_id" class="product_id" value="'.$product->id.'" />');
+								echo('<input type="hidden" name="display_price" class="display_price" value="'.$product->get_display_price().'" />');
+								echo('<input type="hidden" name="quantity" class="quantity" value="1" />');
+								echo('<input type="hidden" name="tax_included" class="tax_included" value="'.esc_attr( true ).'" />');
+//								echo('<input type="hidden" name="title" class="title" value="'.$product->post->post_title.'" />');
+								echo('<input type="hidden" name="title" class="title" value="'.$product->get_title().'" />');
+								echo('<input type="hidden" name="desc" class="desc" value="" />');
+							echo('</span>');
+						echo('</div>');
+					echo('</div>');
+				echo('</li>');
+			endwhile;
+		echo('</ul>');
+	echo('</div>');
+}
+
+function thps_display_products_list($product_kit_id, $products, $product_ids, $show_price = true, $include_price = true,
+	$show_price_in_name = false, $type, $title, $product_class, $ex_validation=false, $show_img = false, $img_width, $img_height){
+
+	if( !is_array( $product_ids ) or count( $product_ids )<1 ) $product_ids = array();
+
+	echo('<li class="product type-product '.$product_class.'">');
+		echo('<table class="ingredient-category" style="margin-bottom:0;">');
+			if(!empty($title)){
+				echo('<thead>');
+					echo('<tr>');
+						echo('<th>'. __($title, 'woocommerce') .'</th>');
+						if($show_price){
+						echo('<th class="center-align">'. get_woocommerce_currency_symbol() .'</th>');
+						}
+						echo('<th>&nbsp;</th>');
+					echo('</tr>');
+				echo('</thead>');
+			}
+
+			echo('<tbody>');
+				while ( $products->have_posts() ) : $products->the_post(); global $product, $post;
+					if($type == "product"){
+						$product_id = $product->id;
+					}else{
+						$product_id = $post->post_parent;
+					}
+
+					if (!in_array($product_id, $product_ids)) {
+						$product_ids[] 	= $post->post_parent;
+						$link   		= get_permalink($product->id);
+						$price			= $include_price ? $product->get_price() : 0;
+						$display_price	= $include_price ? $product->get_display_price() : 0;
+						$chekbox_class 	= $ex_validation ? 'ex-validation' : '';
+						$checked	    = isset($_POST['price_'.$product_id]) ? 'checked="checked"' : '';
+
+						echo('<tr>');
+							if($show_price_in_name){
+								$prod_name_class = 'product-name';
+//								$prod_name		 = 	$product->post->post_title .' (+ '.$product->get_price_html().')';
+								$prod_name		 = 	$product->get_title() .' (+ '.$product->get_price_html().')';
+							}else{
+								$prod_name_class = '';
+//								$prod_name		 = 	$product->post->post_title;
+								$prod_name		 = 	$product->get_title();
+							}
+
+							echo('<td class="'.$prod_name_class.'">');
+							if($show_img === true){
+								$thumb = wp_get_attachment_image_src( get_post_thumbnail_id($product_id), 'widget' );
+//								$thumb = wp_get_attachment_image_src( get_post_thumbnail_id($product_id), 'footer_60_60 size' );
+								if ( $thumb ) {
+									$imgurl = $thumb['0'];
+									if(!$imgurl){
+										$imgurl = wc_placeholder_img_src();
+									}
+								}else{
+									$imgurl = wc_placeholder_img_src();
+								}
+
+/*
+								echo('<span class="product-thumbnail">');
+								echo('<a href="'.$link.'" target="_blank">');
+								echo ('<img src="'.$imgurl.'" alt="">');
+								echo (wp_get_attachment_image_url( $s, 'perfumer-kit' ));
+							  // srcset="%s 40w, %s 70w;
+								echo('"</img></a>');
+								echo('</span>');
+							}
+
+*/
+
+
+								echo('<span class="product-thumbnail">');
+								echo('<a href="'.$link.'" target="_blank">');
+
+								echo apply_filters( 'woocommerce_single_product_image_html',
+									sprintf('<img src="%s" alt="" style="width:'.$img_width.';height:'.$img_height.';" />', $imgurl), $product_id );
+//									sprintf('<img src="%s" alt="' . $prod_name . '" style="width:'.$img_width.';height:'.$img_height.';" />', $imgurl), $product_id ); //MOD J
+								echo('</a>');
+								echo('</span>');
+							}
+								echo('<span class="product-label">');
+								echo('<a href="'.$link.'" target="_blank">'. $prod_name .'</a>');
+								echo('</span>');
+							echo('</td>');
+
+
+
+							if($show_price){
+								echo('<td class="right-align valign-middle">'. $product->get_price_html() .'</td>');
+							}
+
+							echo('<td class="center-align valign-middle">');
+								echo('<span class="valign-middle">');
+									echo('<input type="checkbox" name="price_'.$product_id.'" value="'. $price .'" class="item-price valign-middle'. $chekbox_class .'"
+									onclick="selectBundleItem(this,\''.$product_kit_id.'\')" '. $checked .'/>');
+
+									echo('<input type="hidden" name="product_id" class="product_id" value="'.$product->id.'" />');
+									echo('<input type="hidden" name="display_price" class="display_price" value="'. $display_price .'" />');
+									echo('<input type="hidden" name="quantity" class="quantity" value="1" />');
+									echo('<input type="hidden" name="tax_included" class="tax_included" value="'.esc_attr( true ).'" />');
+//									echo('<input type="hidden" name="title" class="title" value="'.$product->post->post_title.'" />');
+									echo('<input type="hidden" name="title" class="title" value="'.$product->get_title().'" />');
+									echo('<input type="hidden" name="desc" class="desc" value="" />');
+								echo('</span>');
+							echo('</td>');
+						echo('</tr>');
+					}
+				endwhile;
+			echo('</tbody>');
+		echo('</table>');
+	echo('</li>');
+	return $product_ids;
+}
+
+function thps_display_products_as_select_list($products, $style, $custom_select=false){
+	if(is_array($products) || is_object($products)){
+		if($custom_select){
+			echo('<div class="thps_products_list">');
+			echo('<ul class="sort-param sort-param-count">');
+				echo('<li>');
+					echo('<span class="currently-selected"><strong>'. __('Choose a perfume', 'woocommerce-custom-product-bundles') .'</strong></span>');
+					echo('<ul>');
+						foreach($products->posts as $product) {
+							$product_link = $product->guid;
+							echo('<li>');
+								echo('<a href="'.$product_link.'" rel="nofollow" target="_blank">');
+								echo('<span class="avia-bullet"></span>'.$product->post_title.'</a>');
+							echo('</li>');
+						}
+					echo('</ul>');
+				echo('</li>');
+			echo('</ul>');
+			echo('</div>');
+		}else{
+			echo('<div align="center" id="menu-perfumetherapy" class="thps-products-dropdown-div" style="margin-top:25px;">');
+				echo('<h4>');
+				_e('Choose a scent from the menu below', 'woocommerce-custom-product-bundles');
+				echo('</h4">');
+				echo('<div align="center">');
+				echo('<table><tr>');
+					echo('<td>');
+						echo('<select class="thps-products-dropdown" onchange="jumptoUrl(this.value)">');
+							echo('<option value="">'. __('Choose a scent', 'woocommerce-custom-product-bundles') .'</option>');
+							foreach($products->posts as $product) {
+								//$product_link = str_replace('/', '\\', $product->guid);
+								$product_link = get_permalink( $product->ID );
+								echo('<option value="'.$product_link.'">'.$product->post_title.'</option>');
+							}
+						echo('</select>');
+					echo('</td>');
+					echo('<td style="padding-left:15px;">');
+						echo('<img src="'.plugin_dir_url( __FILE__ ).'assets/css/arrow-left-icon-aran.png" width="64" height="64">');
+					echo('</td>');
+				echo('</tr></table>');
+				echo('</div>');
+			echo('</div>');
+		}
+	}
+}
+
+function thps_get_products($category, $category_exclude = array(), $orderby="title", $order="ASC", $per_page=-1){
+	$args = array(
+		'posts_per_page' => $per_page,
+		'tax_query' => array(
+			'relation' => 'AND',
+			array(
+				'taxonomy' => 'product_cat',
+				'field'    => 'slug',
+				'terms'    => $category,
+				'operator' => 'IN',
+			),
+			array(
+				'taxonomy' => 'product_cat',
+				'field'    => 'slug',
+				'terms'    => $category_exclude,
+				'operator' => 'NOT IN',
+			),
+		),
+		'post_type' => 'product',
+		'orderby' 	=> $orderby,
+		'order' 	=> $order,
+	);
+	$products = new WP_Query( $args );
+
+	wp_reset_query();
+	return $products;
+}
+
+function thps_get_product_ids($category, $category_exclude = array()){
+	$products 	  = thps_get_products($category, $category_exclude);
+	$products_ids = array();
+
+	while ( $products->have_posts() ) : $products->the_post(); global $product, $post;
+		$products_ids[] = $product->id;
+	endwhile;
+
+	return $products_ids;
+}
+
+function thps_get_products_by_categories($category, $category_exclude = array()){
+	$args = array(
+		'posts_per_page' => -1,
+		'tax_query' => array(
+			'relation' => 'AND',
+			array(
+				'taxonomy' => 'product_cat',
+				'field'    => 'slug',
+				'terms'    => $category,
+				'operator' => 'IN',
+			),
+			array(
+				'taxonomy' => 'product_cat',
+				'field'    => 'slug',
+				'terms'    => $category_exclude,
+				'operator' => 'NOT IN',
+			),
+		),
+		'post_type' => 'product',
+		'orderby' => 'title',
+	);
+	$products = new WP_Query( $args );
+	wp_reset_query();
+	return $products;
+}
+
+function thps_get_products_by_category($category){
+	$args = array(
+		'posts_per_page' => -1,
+		'tax_query' => array(
+			array(
+				'taxonomy' => 'product_cat',
+				'field'    => 'slug',
+				'terms'    => $category
+			)
+		),
+		'post_type' => 'product',
+		'orderby' => 'title',
+	);
+	$products = new WP_Query( $args );
+	wp_reset_query();
+	return $products;
+}
+
+function thps_get_product_ids_by_category($category){
+	$args = array(
+		'posts_per_page' => -1,
+		'tax_query' => array(
+			array(
+				'taxonomy' => 'product_cat',
+				'field'    => 'slug',
+				'terms'    => $category
+			)
+		),
+		'post_type' => 'product',
+		'orderby' => 'title',
+	);
+	$products = new WP_Query( $args );
+
+	$products_ids = array();
+	while ( $products->have_posts() ) : $products->the_post(); global $product, $post;
+		$products_ids[] = $product->id;
+	endwhile;
+
+	wp_reset_query();
+	return $products_ids;
+}
+
+function thps_get_sub_categories($category_slug, $orderby='title', $order='ASC'){
+	$category 	 = get_term_by('slug', $category_slug, 'product_cat');
+ 	$category_id = $category->term_id;
+
+	if($category_id){
+		$args = array(
+			'taxonomy' 		=> 'product_cat',
+			'child_of' 		=> $category_id,
+			'orderby'     	=> $orderby,
+			'order'       	=> $order,
+			'hide_empty'    => 0,
+			'hierarchical'  => 0,
+		);
+		$categories = get_categories( $args );
+		return $categories;
+	}
+	return false;
+}
+
+function thps_get_sub_categories_slug_list($category_slug, $orderby='title', $order='ASC'){
+	$sub_categories = thps_get_sub_categories($category_slug, $orderby='title', $order='ASC');
+
+	$slug_list = array();
+	if(is_array($sub_categories)){
+		foreach($sub_categories as $sub_cat){
+			$slug_list[] = $sub_cat->slug;
+		}
+	}
+	return $slug_list;
+}
+
+function convertStringToArray($values){
+	if(!empty($values)){
+		$values = explode(",", $values);
+	}
+	if( !is_array( $values ) or count( $values )<1 ) $values = array();
+	return $values;
+}
+
+function thps_perfume_therapy_questionnaire(){
+	$questionnaire = array(
+		'1' => array('name' => 'qstn1', 'type' => '', 'qstn' => 'Indicate the essences that you would like to enter into the composition of your bespoke perfume'),
+		'2' => array('name' => 'qstn2', 'type' => 'textarea', 'qstn' => 'Name the three most important essences of your choice'),
+		'3' => array('name' => 'qstn3', 'type' => 'textarea', 'qstn' => 'If you already know our Scents of the Soul, which one do you prefer?'),
+		'4' => array('name' => 'qstn4', 'type' => 'textarea', 'qstn' => 'Your profession or field of work (important for olfactory psychology)'),
+		'5' => array('name' => 'qstn5', 'type' => 'textarea', 'qstn' => 'Choose the name of your fragrance'),
+		'6' => array('name' => 'qstn6', 'type' => 'textarea', 'qstn' => 'Make comments, give your skype for contact ecc...'),
+		'7' => array('name' => 'emailAddress', 'type' => 'text', 'qstn' => 'E-mail'),
+	);
+	return $questionnaire;
+}
+
+function set_bundle_items_in_session($cart_item_key, $session_data){
+	$session_var  = 'thps_bundle_products_'.$cart_item_key;
+	WC()->session->set( $session_var, $session_data );
+}
+function get_bundle_items_from_session($cart_item_key){
+	$session_var  = 'thps_bundle_products_'.$cart_item_key;
+	$session_data = WC()->session->get($session_var);
+	if(!empty($session_data)){
+		return json_decode( $session_data, true );
+	}else{
+		return false;
+	}
+}
+
+function set_bundle_total_in_session($cart_item_key, $session_data){
+	$session_var  = 'thps_bundle_total_'.$cart_item_key;
+	WC()->session->set( $session_var, $session_data );
+
+	$amount = json_decode( $session_data, true );
+	if($amount){
+		$amount 		= floatval( $amount );
+		$base_amnt 		= thps_wc_aelia_convert_to_base_currency(get_woocommerce_currency(), $amount);
+		$base_amnt_var  = 'thps_bundle_total_base_'.$cart_item_key;
+		WC()->session->set( $base_amnt_var, $base_amnt );
+	}
+}
+function get_bundle_total_from_session($cart_item_key){
+	$session_var  = 'thps_bundle_total_'.$cart_item_key;
+	$session_data = WC()->session->get($session_var);
+	if(!empty($session_data)){
+		return json_decode( $session_data, true );
+	}else{
+		return false;
+	}
+}
+
+function get_bundle_total_base_from_session($cart_item_key){
+	$session_var  = 'thps_bundle_total_base_'.$cart_item_key;
+	$session_data = WC()->session->get($session_var);
+	if(!empty($session_data)){
+		return $session_data;
+	}else{
+		return get_woocommerce_currency();
+	}
+}
+
+function set_bundle_name_in_session($cart_item_key, $session_data){
+	$session_var  = 'thps_bundle_name_'.$cart_item_key;
+	WC()->session->set( $session_var, $session_data );
+}
+function get_bundle_name_from_session($cart_item_key){
+	$session_var  = 'thps_bundle_name_'.$cart_item_key;
+	$session_data = WC()->session->get($session_var);
+	if(!empty($session_data)){
+		return $session_data;
+	}else{
+		return false;
+	}
+}
+
+function set_bundle_name_in_session_for_msg($product_id, $session_data){
+	$session_var  = 'thps_bundle_name_for_msg_'.$product_id;
+	WC()->session->set( $session_var, $session_data );
+}
+function get_bundle_name_from_session_for_msg($product_id){
+	$session_var  = 'thps_bundle_name_for_msg_'.$product_id;
+	$session_data = WC()->session->get($session_var);
+	if(!empty($session_data)){
+		return $session_data;
+	}else{
+		return false;
+	}
+}
+
+function thps_add_cart_item_data( $cart_item_data, $product_id ){
+	$product_type = esc_attr($_REQUEST['product_type']);
+
+	if($product_type === "product_bundle"){
+		$bundle_items = stripslashes($_REQUEST['bundle_items']);
+		$bundle_items_frmtd = thps_bundle_items_formatted($bundle_items);
+
+		$cart_item_data['bundle_items'] = $bundle_items_frmtd;
+	}
+
+  	return $cart_item_data;
+}
+add_filter( 'woocommerce_add_cart_item_data','thps_add_cart_item_data', 10, 2 );
+
+/**
+ * Adds product kit into cart.
+ * Sends questionnaire email to administrator when adding a perfumes therapy kit into cart.
+ */
+function thps_woocommerce_add_to_cart( $cart_item_key, $product_id, $quantity, $variation_id, $variation, $cart_item_data ) {
+	$product_type = esc_attr($_REQUEST['product_type']);
+
+	if($product_type === "product_bundle"){
+		$bundle_total = esc_attr($_REQUEST['bundle_total']);
+		$bundle_name  = esc_attr($_REQUEST['bundle_name']);
+		$bundle_items = stripslashes($_REQUEST['bundle_items']);
+		$bundle_items_frmtd = thps_bundle_items_formatted($bundle_items);
+
+		set_bundle_items_in_session($cart_item_key, $bundle_items);
+		set_bundle_total_in_session($cart_item_key, $bundle_total);
+		set_bundle_name_in_session($cart_item_key, $bundle_name);
+		set_bundle_name_in_session_for_msg($product_id, $bundle_name);
+		$cart_item_data = $bundle_items_frmtd;
+
+		$has_questionnaire = esc_attr($_REQUEST['has_questionnaire']);
+		if($has_questionnaire === "true" || $has_questionnaire === true){
+			$questionnaire = thps_perfume_therapy_questionnaire();
+
+			$from_name 	= get_option( 'woocommerce_email_from_name' );
+			$from_email = get_option( 'woocommerce_email_from_address' );
+
+			$headers 	= array('Content-Type: text/html; charset=UTF-8');
+			$headers[] 	= 'From: '. $from_name .' <'. $from_email .'>';
+//			$headers[]  = 'Cc: sajeertk15@gmail.com';
+
+			$to 	 = "profumo@profumo.it";  //mmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmm
+//			$to 	 = get_option( 'admin_email' );
+			$subject = "Personalized Perfume Order Request";
+
+			$message = '<div style="margin: 15px auto 30px auto; font-size: 68%;">';
+			$message .= '<table cellpadding="5" style="margin: 20px; border-collapse: collapse; width: 300px; font-size: 1.7em; margin-bottom: 20px;"><tr>';
+			$message .= '<td width="60%" style="border: 1px dashed #D8D8D8; text-align:right">TOTAL</td>';
+			$message .= '<td style="border: 1px dashed #D8D8D8; text-align:right; white-space:nowrap;">'. get_woocommerce_currency_symbol() .' '. $bundle_total .'</td>';
+			$message .= '</tr></table>';
+			foreach($questionnaire as $key => $value){
+				$message .= '<dl style="margin: 20px; border-bottom: 1px dashed #D8D8D8; padding-left: 10px;">';
+				$message .= '<dt style="font-size: 1.7em; margin-bottom: 10px; color:#606060;">';
+				$message .= '<span>Question '. $key .': </span>';
+				$message .= $value['qstn'];
+				$message .= '</dt>';
+
+				$message .= '<dd style="margin-left: 0px; margin-bottom: 10px; color:#B00000;">';
+				if($value['type'] === 'text' || $value['type'] === 'textarea'){
+					$message .= '<span style="font-size: 1.7em;">Answer: </span>';
+					$message .= '<span style="font-size: 2.0em;">'. $_REQUEST[$value['name']] .'</span>';
+				}if($value['type'] === ''){
+					$message .= '<span style="font-size: 1.7em;">Fragrances: </span>';
+					$message .= '<span style="font-size: 2.0em;">'. $bundle_items_frmtd .'</span>';
+				}
+				$message .= '</dd>';
+				$message .= '</dl>';
+			}
+			$message .= '</div>';
+
+			wp_mail( $to, $subject, $message, $headers );
+		}
+	}
+}
+add_action( 'woocommerce_add_to_cart', 'thps_woocommerce_add_to_cart', 20, 6 );
+
+/**
+ *-------------------------------
+ * Update product price and name
+ *-------------------------------
+ */
+
+function thps_get_cart_item_from_session( $cart_item, $values, $cart_item_key ) {
+	$bundle_total = get_bundle_total_from_session($cart_item_key);
+	$bundle_name = get_bundle_name_from_session($cart_item_key);
+
+	if($bundle_total){
+		$bundle_total = floatval( $bundle_total );
+		$bundle_total = thps_wc_aelia_convert($cart_item_key, $bundle_total );
+		$cart_item['data']->set_price($bundle_total);
+	}
+
+	if($bundle_name){
+		$cart_item['data']->post->post_title = $bundle_name;
+		$cart_item['data']->post->post_name  = $bundle_name;
+	}
+    return $cart_item;
+}
+add_filter( 'woocommerce_get_cart_item_from_session', 'thps_get_cart_item_from_session', 5, 3 );
+
+/**
+ *----------------------
+ * Save order meta data
+ *----------------------
+ */
+function thps_add_bundle_as_order_meta( $item_id, $values, $cart_item_key ) {
+	$bundles = get_bundle_items_from_session($cart_item_key);
+	if($bundles){
+		$btitle = thps_render_bundle_item_comma_separated($bundles);
+		wc_add_order_item_meta($item_id, "The Kit Includes", $btitle);
+		//wc_add_order_item_meta($item_id, "Bundle Includes", $btitle);
+   	}else{
+      	error_log("no session data", 0);
+	}
+}
+add_action( 'woocommerce_add_order_item_meta', 'thps_add_bundle_as_order_meta', 1, 3 );
+
+/**
+ *---------------------------------
+ * Displays bundle details in cart.
+ *---------------------------------
+ */
+function thps_render_bundle_on_cart( $title = null, $cart_item = null, $cart_item_key = null ) {
+	if( is_cart() ) {
+		return thps_render_bundle_item( $title, $cart_item, $cart_item_key );
+	}
+	return $title;
+}
+add_filter( 'woocommerce_cart_item_name', 'thps_render_bundle_on_cart', 1, 3 );
+
+/**
+ *----------------------------------------------
+ * Displays bundle details in order review page.
+ *----------------------------------------------
+ */
+function thps_render_bundle_on_order_review( $quantity = null, $cart_item = null, $cart_item_key = null ) {
+	return thps_render_bundle_item( $quantity, $cart_item, $cart_item_key );
+}
+add_filter( 'woocommerce_checkout_cart_item_quantity', 'thps_render_bundle_on_order_review', 1, 3 );
+
+/**
+ *-------------------------------
+ * Renders bundle details as list
+ *-------------------------------
+ */
+function thps_render_bundle_item( $html, $cart_item, $cart_item_key ) {
+	if( isset( $cart_item['product_id'] ) ) {
+		$bundles = get_bundle_items_from_session($cart_item_key);
+		if($bundles){
+			$index 	= 0;
+			$btitle = '';
+
+			$html .= '<dl class="variation wcpb-cart-item-container">';
+			$html .= '<dd>';
+			foreach ( $bundles as $key => $bundle ) {
+				$html .= wp_kses_post( wpautop( $bundle['quantity'] .' x '. $bundle['title'] ) );
+			}
+			$html .= '</dd>';
+			$html .= '</dl>';
+		}
+	}
+	return $html;
+}
+
+function thps_render_bundle_item_comma_separated($bundles) {
+	$index 	= 0;
+	$btitle = '';
+	foreach ( $bundles as $key => $bundle ) {
+		if( $index == 0 ) {
+			$btitle .= $bundle['quantity'] .'x '. $bundle['title'];
+		} else {
+			$btitle .= ', '. $bundle['quantity'] .'x '. $bundle['title'];
+		}
+		$index++;
+	}
+	return $btitle;
+}
+
+/**
+ *--------------------------------------------------
+ * Renders bundle details as comma separated string
+ *--------------------------------------------------
+ */
+function thps_bundle_items_formatted( $bundles ) {
+	if($bundles){
+		$bundles = json_decode( $bundles, true );
+		return thps_render_bundle_item_comma_separated($bundles);
+   	}else{
+      	return '';
+	}
+}
+
+function thps_pre_get_posts_query( $q ) {
+	if ( ! $q->is_main_query() ) return;
+	if ( ! $q->is_post_type_archive() ) return;
+
+	if ( ! is_admin() && is_shop() ) {
+		$q->set( 'tax_query', array(array(
+			'taxonomy' 	=> 'product_cat',
+			'field' 	=> 'slug',
+			'terms' 	=> array( 'custom-product-kit' ),
+			'operator' 	=> 'NOT IN'
+		)));
+	}
+	remove_action( 'pre_get_posts', 'custom_pre_get_posts_query' );
+}
+//add_action( 'pre_get_posts', 'thps_pre_get_posts_query' );
+
+function thps_shop_messages() {
+	if ( ! is_checkout() ) {
+		echo wp_kses_post( do_shortcode( '[woocommerce_messages]' ) );
+	}
+}
+//add_action( 'ava_after_main_title', 'thps_shop_messages' );
+
+function thps_add_to_cart_message($message, $product_id ) {
+	if ( !is_array( $product_id ) ) {
+		$title  = get_bundle_name_from_session_for_msg($product_id);
+		if( $title ){
+			$msg = sprintf( __( '&quot;%s&quot; was successfully added to your cart.', 'woocommerce' ), $title );
+
+			if ( get_option( 'woocommerce_cart_redirect_after_add' ) == 'yes' ) :
+				$return_to  = apply_filters( 'woocommerce_continue_shopping_redirect', wp_get_referer() ? wp_get_referer() : home_url() );
+				$message    = sprintf('<a href="%s" class="button wc-forward">%s</a> %s', $return_to, __( 'Continue Shopping', 'woocommerce' ), $msg );
+
+			else :
+				$message    = sprintf('<a href="%s" class="button wc-forward">%s</a> %s', wc_get_page_permalink( 'cart' ), __( 'View Cart', 'woocommerce' ), $msg );
+
+			endif;
+		}
+	}
+
+	return $message;
+}
+add_filter( 'wc_add_to_cart_message', 'thps_add_to_cart_message', 10, 2 );
+
+/**
+ *--------------------------
+ * Common functions - START
+ *--------------------------
+ */
+function sortProductVariations($variations){
+	usort($variations->posts, "thps_cmp");
+}
+function thps_cmp($a, $b){
+    return strcmp(getProductTitle($a), getProductTitle($b));
+}
+
+function sortProductListByCount($array){
+	uasort($array, "thps_cmp_count");
+	return $array;
+}
+function thps_cmp_count($a, $b){
+    $a = $a->post_count;
+	$b = $b->post_count;
+	return ($a == $b) ? 0 : (($a < $b) ? 1 : -1);
+}
+
+function getProductTitle($product){
+	$title  = $product->post_title;
+	$prefix = 'Variation #'.$product->ID.' of';
+	if (substr($title, 0, strlen($prefix)) == $prefix) {
+		$title = substr($title, strlen($prefix));
+		$title = trim($title, " ");
+	}
+	return $title;
+}
+/**
+ *------------------------
+ * Common functions - END
+ *------------------------
+ */
+
+/**
+ *-----------------------------------------
+ * Aelia Currency Switcher Support - START
+ *-----------------------------------------
+ */
+function thps_wc_aelia_convert_to_base_currency($from_currency, $amount){
+	// Disable the custom rounding function, if it's attached. This will prevent
+	// a double rounding of the bundle price.
+	// @link https://aelia.freshdesk.com/helpdesk/tickets/6905
+	$custom_rounding_function = 'my_custom_rounding';
+	if($rounding_filter_enabled = has_filter('wc_aelia_cs_converted_amount', $custom_rounding_function)) {
+		remove_filter('wc_aelia_cs_converted_amount', $custom_rounding_function, 10, 5);
+	}
+
+	$base_currency = get_option('woocommerce_currency');
+
+	if($base_currency && $from_currency){
+		$amount = apply_filters('wc_aelia_cs_convert', $amount, $from_currency, $base_currency);
+	}
+
+	// Restore the rounding filter, if it was originally present
+	if($rounding_filter_enabled) {
+		add_filter('wc_aelia_cs_converted_amount', $custom_rounding_function, 10, 5);
+	}
+
+	return $amount;
+}
+
+function thps_wc_aelia_convert($cart_item_key, $amount){
+	$base_currency = get_option('woocommerce_currency');
+	$to_currency   = get_woocommerce_currency();
+	$amount_in_base_currency = get_bundle_total_base_from_session($cart_item_key);
+
+	if($base_currency && $to_currency){
+		$amount = apply_filters('wc_aelia_cs_convert', $amount_in_base_currency, $base_currency, $to_currency);
+	}
+
+	return $amount;
+}
+/**
+ *--------------------------------------
+ * Aelia Currency Switcher Support -END
+ *--------------------------------------
+ */
+
+/**
+ *--------------------
+ * CAPTCHA Validation
+ *--------------------
+ */
+function thps_secure_captcha_1(){
+	/*
+	?>
+    <div id='thpt_recaptcha_div'></div>
+    <?php
+	*/
+}
+function thps_secure_captcha(){
+	$siteKey = "6Lc5qhcTAAAAAEJ_Hyzz_0FXsMTRmTyvPD7upYVK";    //SITE KEY
+	?>
+    <input type="hidden" name="has_captcha" value="true" >
+    <table style="margin-bottom:20px;">
+    	<tr>
+        	<td style="margin:0; padding:0; border: 0; background-color: #fff;">
+				<div class="g-recaptcha" data-sitekey="<?php echo $siteKey ?>"></div>
+    		</td>
+    	</tr>
+    </table>
+    <?php
+}
+
+function thps_validate_captcha( $passed, $product_id ){
+	$product_type = esc_attr($_REQUEST['product_type']);
+	$result		  = 1;
+
+	if($product_type === "product_bundle"){
+		$has_captcha = esc_attr($_REQUEST['has_captcha']);
+		//$has_questionnaire = esc_attr($_REQUEST['has_questionnaire']);
+
+		//if($has_questionnaire === "true" || $has_questionnaire === true){
+		if($has_captcha === "true" || $has_captcha === true){
+			$captcha;
+			if(isset($_POST['g-recaptcha-response'])){
+			  	$captcha = $_POST['g-recaptcha-response'];
+			}
+
+			if(!$captcha){
+			  	$result = -1;
+			}else{
+				$secretKey = "6Lc5qhcTAAAAAP8c7fsUzfoo1xT3vxeLkIrH9j0-";  //SECRET KEY
+				$ip = $_SERVER['REMOTE_ADDR'];
+
+				$response = file_get_contents("https://www.google.com/recaptcha/api/siteverify?secret=".$secretKey."&response=".$captcha."&remoteip=".$ip);
+				$responseKeys = json_decode($response, true);
+
+				$result = intval($responseKeys["success"]);
+				/*if(intval($responseKeys["success"]) !== 1) {
+				  	$result = -1;
+				}*/
+			}
+		}
+	}
+
+	if( $result !== 1 ){
+		$passed = false;
+		wc_add_notice( __( "You haven't passed the captcha control. Please try again!", 'woocommerce-custom-product-bundles' ), 'error' );
+	}
+	return $passed;
+}
+add_action( 'woocommerce_add_to_cart_validation', 'thps_validate_captcha', 11, 2 );
+
+
+function thps_validate_captcha_test( $passed, $product_id ){
+	$product_type = esc_attr($_REQUEST['product_type']);
+	$result		  = 1;
+
+	$product_type = "product_bundle";
+	if($product_type === "product_bundle"){
+		$has_captcha = esc_attr($_REQUEST['has_captcha']);
+		$has_captcha = true;
+		//$has_questionnaire = esc_attr($_REQUEST['has_questionnaire']);
+
+		//if($has_questionnaire === "true" || $has_questionnaire === true){
+		if($has_captcha === "true" || $has_captcha === true){
+			$captcha;
+			if(isset($_POST['g-recaptcha-response'])){
+			  	$captcha = $_POST['g-recaptcha-response'];
+			}
+
+			if(!$captcha){
+			  	$result = -1;
+			}else{
+				$secretKey = "6Lc5qhcTAAAAAP8c7fsUzfoo1xT3vxeLkIrH9j0-";  //SECRET KEY
+				$ip = $_SERVER['REMOTE_ADDR'];
+
+				$response = file_get_contents("https://www.google.com/recaptcha/api/siteverify?secret=".$secretKey."&response=".$captcha."&remoteip=".$ip);
+				$responseKeys = json_decode($response, true);
+
+				$result = intval($responseKeys["success"]);
+				/*if(intval($responseKeys["success"]) !== 1) {
+				  	$result = -1;
+				}*/
+			}
+		}
+	}
+
+	if( $result !== 1 ){
+		$passed = false;
+		wc_add_notice( __( "You haven't passed the captcha control. Please try again!", 'woocommerce-custom-product-bundles' ), 'error' );
+	}
+	return $passed;
+}
+//add_action( 'woocommerce_add_to_cart_validation', 'thps_validate_captcha_test', 11, 2 );
+
+/*function thps_validate_captcha( $passed, $product_id ){
+	$product_type = esc_attr($_REQUEST['product_type']);
+	$result		  = 1;
+
+	if($product_type === "product_bundle"){
+		$has_questionnaire = esc_attr($_REQUEST['has_questionnaire']);
+
+		if($has_questionnaire === "true" || $has_questionnaire === true){
+			$uidus 	  = esc_attr($_REQUEST['uidus']);
+			$limpiado = strip_tags(stripslashes(htmlentities(addslashes(trim($uidus)))));
+			$datosent = explode("///",$limpiado);
+
+			if($datosent[0] != ''){
+				if($datosent[1] == 'c'){
+					$host 	 = 'syshtml5.pluscaptcha.com';
+				}else{
+					$HostReg = array('syshtml5.agartha.us','syshtml5.loquees.biz','syshtml5.ispect.ws');
+					$host 	 = $HostReg[$datosent[1]];
+				}
+
+				$result = file_get_contents('http://'.$host.'/r?iduso='.$datosent[0]. '');
+			}
+		}
+	}
+
+	if( $result != '1' ){
+		$passed = false;
+		wc_add_notice( __( "You haven't passed the captcha control. Please try again!", 'woocommerce-custom-product-bundles' ), 'error' );
+	}
+	return $passed;
+}
+add_action( 'woocommerce_add_to_cart_validation', 'thps_validate_captcha', 11, 2 );*/
+
+/*function thps_secure_captcha_old(){
+	$keyC = file_get_contents('http://captchakey.biz/');
+
+	if ($keyC == '1'){
+		$Hostausar = 'syshtml5.pluscaptcha.com';
+		$h = 'c';
+	}else{
+		$Hostausar = array('syshtml5.agartha.us','syshtml5.loquees.biz','syshtml5.ispect.ws');
+		$Aleatorio = array_rand($Hostausar,1);
+		$Hostausar = $Hostausar[$Aleatorio];
+		$h = $Aleatorio;
+	}
+
+	?>
+    <div style="width:235px; height: auto;">
+        <?php $c = 'none'; // BG color of IFRAME Ex: ffa3c8, ffd5a3, none ?>
+        <?php $uidus = file_get_contents('http://'.$Hostausar.'/g?id=e6ed'.'&c='.$c); ?>
+
+        <iframe src="http://<?php echo $Hostausar; ?>/i?iduso=<?php echo $uidus; ?>&h=<?php echo $_SERVER['HTTP_HOST']; ?>"
+    	width="235" height="145" scrolling="no" frameborder="0"></iframe>
+
+        <input name="uidus" type="hidden" value="<?php echo($uidus.'///'.$h); ?>"/>
+	</div>
+	<?php
+}*/

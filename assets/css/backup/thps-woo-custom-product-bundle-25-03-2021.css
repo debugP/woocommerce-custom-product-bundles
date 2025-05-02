@@ -1,0 +1,180 @@
+bdi {/* MOD J  */
+    white-space: nowrap;
+}
+
+#top input[type="checkbox"] {
+    display: table-cell;
+}
+.ingredient-category .product-label a { /* MOD J https://profumo.it/kit-del-profumiere/ */
+	text-align: left !important;
+    color: #222 !important;
+}
+
+table.ingredient-category span.product-label a { /*tabella prodotti custom perfume */
+    font-size: 16px !important;
+    text-align: left !important;
+}
+
+table.ingredient-category span.product-label a:hover { text-decoration: underline !important; color: #a81010 !important;} /* MOD J  KIT PROFUMIERE  */
+
+.questionnaire .error-field{
+	border: 1px solid #ff0000 !important;
+}
+.questionnaire .required{
+	margin-left: 5px !important;
+	font-size: 15px !important;
+	color: #ff0000 !important;
+}
+
+.shop_columns_6 .products .product {
+  	margin: 0 1% 1% 0;
+  	width: 15.83%;	
+}
+
+#top .thumbnail_container img.attachment-bundle_thumbnail{
+  	width: 90px;
+	height: 90px;
+	margin: 15px auto;
+}
+
+#top .thps_shop_columns .inner_product{
+	border:0;
+}
+
+#top .thps_shop_columns .inner_product_header{
+  	text-align: center;
+	border:0;
+}
+#top #wrap_all .main_color h3.product-name{
+	font-size: 17px;
+    color: #555555;
+    font-weight: bold;
+}
+#top .thps_shop_columns .price, #top .thps-actions-row .price{
+	display: inline;
+	font-size: 18px !important;
+    color: #555555;
+}
+#top .thps_shop_columns .price span.amount, #top .ingredient-category .price span.amount, #top .ingredient-category span.amount{
+	font-size: 18px !important;
+}
+#top .thps-actions-row .amount{
+	font-size: 18px !important;
+}
+
+.thps_shop_columns{
+	width: fit-content;  /* MOD J pagina perfumer-kit-custom-perfume/ altrimenti il checkbox sparisce */
+}
+
+.thps-actions-row{
+	height: 35px;
+	margin-bottom: 10px;
+	clear: both;
+}
+.thps-actions-row span.thps-actions-column{
+	float:right;
+}
+
+.thps-products{
+	overflow: hidden;
+  	margin-bottom: 0px;
+}
+
+.questionnaire{
+	clear: both;
+}
+.captcha-img{
+	border: 1px solid gray;
+}
+.captcha-field{
+	width: 200px;
+}
+
+.ingredient-category th{
+	font-size: 13px;
+}
+.ingredient-category td{
+	font-size: 14px;
+}
+.ingredient-category td.product-name span.amount{
+	font-size: 14px!important;
+	display:inline;
+}
+
+.ingredient-category .right-align{ text-align:right; white-space: nowrap; }
+.ingredient-category .left-align{ text-align:left; }
+.ingredient-category .center-align{ text-align:center; }
+.ingredient-category .valign-middle{ vertical-align:middle; }
+/* MOD JAMALUDDIN
+.ingredient-category span{
+	vertical-align:middle;
+} */
+.ingredient-category .product-thumbnail{
+	padding-right: 7px;
+	width: 20px;
+	display:table-cell;
+	text-align:center;
+	vertical-align:middle;
+	line-height:normal;
+}
+ul.products li.product .ingredient-category .product-thumbnail img{
+	margin:0;
+	max-width: none;
+}
+	
+.ingredient-category .product-label {
+	display:table-cell;
+	vertical-align:middle;
+	line-height:normal;
+}
+
+/************************** 
+ * Products dropdown style
+ **************************/
+.thps-products-dropdown-div {
+	clear: both;
+    position: relative;
+}
+.entry-content-wrapper .thps-products-dropdown-div {
+    padding-bottom: 10px;
+}
+.thps-products-dropdown-div p{ font-size: 16px; margin-bottom: 10px;}
+#top .main_color select.thps-products-dropdown {
+    font-size: 18px;
+    width: 300px;
+    color: #2B3920;
+    font-weight: 300;
+    background: #fcfcfc;
+	background: #fcfcfc url('arrow_down.png') right center no-repeat;
+    border: 3px double #a81010; /*e1e1e1*/
+    margin: 0px auto;
+    padding: 10px 15px;
+}
+ 
+.main_color .thps-products-dropdown-div table{
+	width:auto;
+	border:0;
+	background:none;	
+}
+.thps-products-dropdown-div table tr, .thps-products-dropdown-div table tbody, .thps-products-dropdown-div table tr:nth-child(odd){
+	background:none;
+}
+.thps-products-dropdown-div table tr td {
+	background:none;
+	padding:0;
+    border: 0px;
+	vertical-align:middle;
+}
+
+
+@media only screen and (max-width: 989px) and (min-width: 640px) { /* MOD J */
+	.shop_columns_6 .products .product {
+		width: 32%;
+	}
+}
+
+@media only screen and (max-width: 480px) { /* MOD J */
+	.shop_columns_3.thps_shop_columns { /* MOD J pagina perfumer-kit-custom-perfume/ (e mignon) altrimenti il checkbox sparisce */
+		width: fit-content;
+	}
+}
