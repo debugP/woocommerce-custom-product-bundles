@@ -770,40 +770,54 @@ function thps_display_products_grid( $product_kit_id, $products, $max_cols, $ind
         $products->the_post();
         global $product;
 
-        $col_index = $index == 0 ? 0 : $index % $max_cols;
-        $product_class = ($col_index == 0) ? 'first' : (($col_index == ($max_cols - 1)) ? 'last' : '');
-        $index = $index + 1;
+        // --- Calcolo della classe colonna (unchanged) ---
+        $col_index     = $index === 0 ? 0 : ( $index % $max_cols );
+        $product_class = ( $col_index === 0 ) 
+            ? 'first' 
+            : ( $col_index === ( $max_cols - 1 ) ? 'last' : '' );
+        $index++;
 
+        // ← Usa get_id() anziché ->id 
         $product_id = $product->get_id();
-        $link = get_permalink($product_id);
-        $checked = isset($_POST['price_' . $product_id]) ? 'checked' : '';
+        $link       = get_permalink( $product_id );
+        $checked    = isset( $_POST[ 'price_' . $product_id ] ) ? 'checked' : '';
 
         echo '<li class="product type-product ' . esc_attr( $product_class ) . '">';
-        echo '<div class="inner_product">';
+          echo '<div class="inner_product">';
 
-        echo '<a href="' . esc_url( $link ) . '">';
-        echo '<div class="thumbnail_container" style="width:40px;height:40px;overflow:hidden;">';
-        $thumbnail_attr = array(
-            'class' => 'attachment-shop_thumbnail wp-post-image',
-            'alt' => esc_attr( $product->get_title() ),
-            'style' => 'width:40px;height:40px;object-fit:cover;'
-        );
-        echo get_the_post_thumbnail( $product_id, 'shop_thumbnail', $thumbnail_attr );
-        echo '</div>';
-        echo '</a>';
+            // ← l’attributo alt → get_title() 
+            $thumbnail_attr = [
+              'class' => 'attachment-bundle_thumbnail wp-post-image',
+              'alt'   => esc_attr( $product->get_title() ),
+            ];
+            echo '<a href="' . esc_url( $link ) . '">';
+              echo '<div class="thumbnail_container">';
+                echo get_the_post_thumbnail( $product_id, 'shop_thumbnail', $thumbnail_attr );
+              echo '</div>';
+            echo '</a>';
 
-        echo '<div class="inner_product_header">';
-        echo '<a href="' . esc_url( $link ) . '">';
-        echo '<h3 class="product-name">' . esc_html( $product->get_title() ) . '</h3>';
-        echo '</a>';
+            echo '<div class="inner_product_header">';
+              echo '<a href="' . esc_url( $link ) . '">';
+                echo '<h3 class="product-name">' . esc_html( $product->get_title() ) . '</h3>';
+              echo '</a>';
 
-        echo '<span class="price product-price">' . wp_kses_post( $product->get_price_html() ) . '</span>';
-        echo '<input type="checkbox" name="price_' . esc_attr( $product_id ) . '" value="' . esc_attr( $product->get_price() ) . '" onclick="selectBundleItem(this,\'' . esc_js( $product_kit_id ) . '\')"' . $checked . ' />';
-        echo '<input type="hidden" name="product_id" value="' . esc_attr( $product_id ) . '"/>';
-        echo '<input type="hidden" name="display_price" value="' . esc_attr( wc_get_price_to_display( $product ) ) . '"/>';
-        echo '<input type="hidden" name="title" value="' . esc_attr( $product->get_title() ) . '"/>';
-        echo '</div>';
-        echo '</div>';
+              // get_price_html() è già un metodo :contentReference[oaicite:5]{index=5}
+              echo '<span class="price product-price">' . wp_kses_post( $product->get_price_html() ) . '</span>';
+
+              // ← usa get_price() anziché ->price :contentReference[oaicite:6]{index=6}
+              echo '<input type="checkbox" name="price_' . esc_attr( $product_id ) . '"'
+                 . ' value="' . esc_attr( $product->get_price() ) . '"'
+                 . ' onclick="selectBundleItem(this,\'' . esc_js( $product_kit_id ) . '\')"'
+                 . $checked . ' />';
+
+              // hidden inputs: usa get_id(), get_price(), get_title()
+              echo '<input type="hidden" name="product_id" value="' . esc_attr( $product_id ) . '"/>';
+              echo '<input type="hidden" name="display_price" value="' . esc_attr( wc_get_price_to_display( $product ) ) . '"/>';
+              echo '<input type="hidden" name="title" value="' . esc_attr( $product->get_title() ) . '"/>';
+
+            echo '</div>'; // .inner_product_header
+
+          echo '</div>'; // .inner_product
         echo '</li>';
     }
     wp_reset_postdata();
@@ -940,14 +954,11 @@ function thps_display_products_list(
           }
 */
 			if ( $show_img ) {
-					echo '<div class="thumbnail_container" style="width:' . esc_attr($img_width) . ';height:' . esc_attr($img_height) . ';overflow:hidden;display:inline-block;vertical-align:middle;margin-right:10px;">';
-					$thumbnail_attr = array(
-						'class' => 'attachment-shop_thumbnail wp-post-image',
-						'alt' => esc_attr($product->get_title()),
-						'style' => 'width:' . esc_attr($img_width) . ';height:' . esc_attr($img_height) . ';object-fit:cover;'
-					);
-					echo get_the_post_thumbnail($product_id, 'shop_thumbnail', $thumbnail_attr);
-					echo '</div>';
+					echo get_the_post_thumbnail(
+					$product_id,
+					'shop_thumbnail',
+					array( 'style' => "width:{$img_width};height:{$img_height};" )
+				);
 			}
 
 
@@ -959,7 +970,11 @@ function thps_display_products_list(
           }
 
           echo '<td>';
-          echo '<input type="checkbox" name="price_' . esc_attr( $product_id ) . '" class="item-price ' . esc_attr( $ex_class ) . '" value="' . esc_attr( $price ) . '" onclick="selectBundleItem(this,\'' . esc_js( $product_kit_id ) . '\')" ' . $checked . '/>';
+          echo '<input type="checkbox" name="price_' . esc_attr( $product_id ) . '"'
+             . ' class="item-price ' . esc_attr( $ex_class ) . '"'
+             . ' value="' . esc_attr( $price ) . '"'
+             . ' onclick="selectBundleItem(this,\'' . esc_js( $product_kit_id ) . '\')"'
+             . $checked . '/>';
           echo '</td>';
         echo '</tr>';
 
@@ -1388,17 +1403,17 @@ function get_bundle_name_from_session_for_msg($product_id){
 }
 
 function thps_add_cart_item_data( $cart_item_data, $product_id ){
-    // Initialize product_type with a default value
-    $product_type = isset($_REQUEST['product_type']) ? sanitize_text_field($_REQUEST['product_type']) : '';
+	$product_type = array();
+	$product_type = esc_attr($_REQUEST['product_type']);
 
-    if($product_type === "product_bundle"){
-        $bundle_items = isset($_REQUEST['bundle_items']) ? stripslashes($_REQUEST['bundle_items']) : '';
-        $bundle_items_frmtd = thps_bundle_items_formatted($bundle_items);
+	if($product_type === "product_bundle"){
+		$bundle_items = stripslashes($_REQUEST['bundle_items']);
+		$bundle_items_frmtd = thps_bundle_items_formatted($bundle_items);
 
-        $cart_item_data['bundle_items'] = $bundle_items_frmtd;
-    }
+		$cart_item_data['bundle_items'] = $bundle_items_frmtd;
+	}
 
-    return $cart_item_data;
+  	return $cart_item_data;
 }
 add_filter( 'woocommerce_add_cart_item_data','thps_add_cart_item_data', 10, 2 );
 
@@ -1407,64 +1422,65 @@ add_filter( 'woocommerce_add_cart_item_data','thps_add_cart_item_data', 10, 2 );
  * Sends questionnaire email to administrator when adding a perfumes therapy kit into cart.
  */
 function thps_woocommerce_add_to_cart( $cart_item_key, $product_id, $quantity, $variation_id, $variation, $cart_item_data ) {
-    // Initialize product_type with a default value
-    $product_type = isset($_REQUEST['product_type']) ? sanitize_text_field($_REQUEST['product_type']) : '';
+//	$product_type = isset($_REQUEST['product_type']) ? esc_attr($_REQUEST['product_type']) : '';  // MOD JMB
+	$product_type = array();  // MOD JMB
+	$product_type = esc_attr($_REQUEST['product_type']);
 
-    if($product_type === "product_bundle"){
-        $bundle_total = isset($_REQUEST['bundle_total']) ? sanitize_text_field($_REQUEST['bundle_total']) : '';
-        $bundle_name  = isset($_REQUEST['bundle_name']) ? sanitize_text_field($_REQUEST['bundle_name']) : '';
-        $bundle_items = isset($_REQUEST['bundle_items']) ? stripslashes($_REQUEST['bundle_items']) : '';
-        $bundle_items_frmtd = thps_bundle_items_formatted($bundle_items);
+	if($product_type === "product_bundle"){
+		$bundle_total = esc_attr($_REQUEST['bundle_total']);
+		$bundle_name  = esc_attr($_REQUEST['bundle_name']);
+		$bundle_items = stripslashes($_REQUEST['bundle_items']);
+		$bundle_items_frmtd = thps_bundle_items_formatted($bundle_items);
 
-        set_bundle_items_in_session($cart_item_key, $bundle_items);
-        set_bundle_total_in_session($cart_item_key, $bundle_total);
-        set_bundle_name_in_session($cart_item_key, $bundle_name);
-        set_bundle_name_in_session_for_msg($product_id, $bundle_name);
-        $cart_item_data = $bundle_items_frmtd;
+		set_bundle_items_in_session($cart_item_key, $bundle_items);
+		set_bundle_total_in_session($cart_item_key, $bundle_total);
+		set_bundle_name_in_session($cart_item_key, $bundle_name);
+		set_bundle_name_in_session_for_msg($product_id, $bundle_name);
+		$cart_item_data = $bundle_items_frmtd;
 
-        $has_questionnaire = isset($_REQUEST['has_questionnaire']) ? sanitize_text_field($_REQUEST['has_questionnaire']) : '';
-        if($has_questionnaire === "true" || $has_questionnaire === true){
-            $questionnaire = thps_perfume_therapy_questionnaire();
+		$has_questionnaire = esc_attr($_REQUEST['has_questionnaire']);
+		if($has_questionnaire === "true" || $has_questionnaire === true){
+			$questionnaire = thps_perfume_therapy_questionnaire();
 
-            $from_name 	= get_option( 'woocommerce_email_from_name' );
-            $from_email = get_option( 'woocommerce_email_from_address' );
+			$from_name 	= get_option( 'woocommerce_email_from_name' );
+			$from_email = get_option( 'woocommerce_email_from_address' );
 
-            $headers 	= array('Content-Type: text/html; charset=UTF-8');
-            $headers[] 	= 'From: '. $from_name .' <'. $from_email .'>';
-    //		$headers[]  = 'Cc: sajeertk15@gmail.com';
+			$headers 	= array('Content-Type: text/html; charset=UTF-8');
+			$headers[] 	= 'From: '. $from_name .' <'. $from_email .'>';
+//			$headers[]  = 'Cc: sajeertk15@gmail.com';
 
-            $to 	 = "debug@profumo.it";  
-            // $subject = "Personalized Perfume Order Request";
-            $subject = "Personalized Perfume Order Request - " . htmlspecialchars($qstn5);  // MOD J
+			$to 	 = "debug@profumo.it";  
+			// $subject = "Personalized Perfume Order Request";
+			$subject = "Personalized Perfume Order Request - " . htmlspecialchars($qstn5);  // MOD J
 
-            $message = '<div style="margin: 15px auto 30px auto; font-size: 68%;">';
-            $message .= '<table cellpadding="5" style="margin: 20px; border-collapse: collapse; width: 300px; font-size: 1.7em; margin-bottom: 20px;"><tr>';
-            $message .= '<td width="60%" style="border: 1px dashed #D8D8D8; text-align:right">TOTAL</td>';
-            $message .= '<td style="border: 1px dashed #D8D8D8; text-align:right; white-space:nowrap;">'. get_woocommerce_currency_symbol() .' '. $bundle_total .'</td>';
-            $message .= '</tr></table>';
-            foreach($questionnaire as $key => $value){
-                $message .= '<dl style="margin: 20px; border-bottom: 1px dashed #D8D8D8; padding-left: 10px;">';
-                $message .= '<dt style="font-size: 1.7em; margin-bottom: 10px; color:#606060;">';
-                $message .= '<span>Question '. $key .': </span>';
-                $message .= $value['qstn'];
-                $message .= '</dt>';
+			$message = '<div style="margin: 15px auto 30px auto; font-size: 68%;">';
+			$message .= '<table cellpadding="5" style="margin: 20px; border-collapse: collapse; width: 300px; font-size: 1.7em; margin-bottom: 20px;"><tr>';
+			$message .= '<td width="60%" style="border: 1px dashed #D8D8D8; text-align:right">TOTAL</td>';
+			$message .= '<td style="border: 1px dashed #D8D8D8; text-align:right; white-space:nowrap;">'. get_woocommerce_currency_symbol() .' '. $bundle_total .'</td>';
+			$message .= '</tr></table>';
+			foreach($questionnaire as $key => $value){
+				$message .= '<dl style="margin: 20px; border-bottom: 1px dashed #D8D8D8; padding-left: 10px;">';
+				$message .= '<dt style="font-size: 1.7em; margin-bottom: 10px; color:#606060;">';
+				$message .= '<span>Question '. $key .': </span>';
+				$message .= $value['qstn'];
+				$message .= '</dt>';
 
-                $message .= '<dd style="margin-left: 0px; margin-bottom: 10px; color:#B00000;">';
-                if($value['type'] === 'text' || $value['type'] === 'textarea'){
-                    $message .= '<span style="font-size: 1.7em;">Answer: </span>';
-                    $message .= '<span style="font-size: 2.0em;">'. $_REQUEST[$value['name']] .'</span>';
-                }if($value['type'] === ''){
-                    $message .= '<span style="font-size: 1.7em;">Fragrances: </span>';
-                    $message .= '<span style="font-size: 2.0em;">'. $bundle_items_frmtd .'</span>';
-                }
-                $message .= '</dd>';
-                $message .= '</dl>';
-            }
-            $message .= '</div>';
+				$message .= '<dd style="margin-left: 0px; margin-bottom: 10px; color:#B00000;">';
+				if($value['type'] === 'text' || $value['type'] === 'textarea'){
+					$message .= '<span style="font-size: 1.7em;">Answer: </span>';
+					$message .= '<span style="font-size: 2.0em;">'. $_REQUEST[$value['name']] .'</span>';
+				}if($value['type'] === ''){
+					$message .= '<span style="font-size: 1.7em;">Fragrances: </span>';
+					$message .= '<span style="font-size: 2.0em;">'. $bundle_items_frmtd .'</span>';
+				}
+				$message .= '</dd>';
+				$message .= '</dl>';
+			}
+			$message .= '</div>';
 
-            wp_mail( $to, $subject, $message, $headers );
-        }
-    }
+			wp_mail( $to, $subject, $message, $headers );
+		}
+	}
 }
 add_action( 'woocommerce_add_to_cart', 'thps_woocommerce_add_to_cart', 20, 6 );
 
@@ -1608,25 +1624,25 @@ function thps_shop_messages() {
 //add_action( 'ava_after_main_title', 'thps_shop_messages' );
 
 function thps_add_to_cart_message($message, $product_id ) {
-    if ( !is_array( $product_id ) ) {
-        $title = get_bundle_name_from_session_for_msg($product_id);
-        if( $title ){
-            $msg = sprintf( __( '&quot;%s&quot; was successfully added to your cart.', 'woocommerce' ), $title );
+	if ( !is_array( $product_id ) ) {
+		$title  = get_bundle_name_from_session_for_msg($product_id);
+		if( $title ){
+			$msg = sprintf( __( '&quot;%s&quot; was successfully added to your cart.', 'woocommerce' ), $title );
 
-            if ( get_option( 'woocommerce_cart_redirect_after_add' ) == 'yes' ) :
-                $return_to  = apply_filters( 'woocommerce_continue_shopping_redirect', wp_get_referer() ? wp_get_referer() : home_url() );
-                $message    = sprintf('<a href="%s" class="button wc-forward">%s</a> %s', $return_to, __( 'Continue Shopping', 'woocommerce' ), $msg );
-            else :
-                $message    = sprintf('<a href="%s" class="button wc-forward">%s</a> %s', wc_get_page_permalink( 'cart' ), __( 'View Cart', 'woocommerce' ), $msg );
-            endif;
-        }
-    }
+			if ( get_option( 'woocommerce_cart_redirect_after_add' ) == 'yes' ) :
+				$return_to  = apply_filters( 'woocommerce_continue_shopping_redirect', wp_get_referer() ? wp_get_referer() : home_url() );
+				$message    = sprintf('<a href="%s" class="button wc-forward">%s</a> %s', $return_to, __( 'Continue Shopping', 'woocommerce' ), $msg );
 
-    return $message;
+			else :
+				$message    = sprintf('<a href="%s" class="button wc-forward">%s</a> %s', wc_get_page_permalink( 'cart' ), __( 'View Cart', 'woocommerce' ), $msg );
+
+			endif;
+		}
+	}
+
+	return $message;
 }
-// Update the filter to use the new hook
-remove_filter( 'wc_add_to_cart_message', 'thps_add_to_cart_message', 10 );
-add_filter( 'wc_add_to_cart_message_html', 'thps_add_to_cart_message', 10, 2 );
+add_filter( 'wc_add_to_cart_message', 'thps_add_to_cart_message', 10, 2 );
 
 /**
  *--------------------------

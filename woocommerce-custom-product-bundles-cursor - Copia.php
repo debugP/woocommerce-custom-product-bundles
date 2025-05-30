@@ -770,40 +770,54 @@ function thps_display_products_grid( $product_kit_id, $products, $max_cols, $ind
         $products->the_post();
         global $product;
 
-        $col_index = $index == 0 ? 0 : $index % $max_cols;
-        $product_class = ($col_index == 0) ? 'first' : (($col_index == ($max_cols - 1)) ? 'last' : '');
-        $index = $index + 1;
+        // --- Calcolo della classe colonna (unchanged) ---
+        $col_index     = $index === 0 ? 0 : ( $index % $max_cols );
+        $product_class = ( $col_index === 0 ) 
+            ? 'first' 
+            : ( $col_index === ( $max_cols - 1 ) ? 'last' : '' );
+        $index++;
 
+        // ← Usa get_id() anziché ->id 
         $product_id = $product->get_id();
-        $link = get_permalink($product_id);
-        $checked = isset($_POST['price_' . $product_id]) ? 'checked' : '';
+        $link       = get_permalink( $product_id );
+        $checked    = isset( $_POST[ 'price_' . $product_id ] ) ? 'checked' : '';
 
         echo '<li class="product type-product ' . esc_attr( $product_class ) . '">';
-        echo '<div class="inner_product">';
+          echo '<div class="inner_product">';
 
-        echo '<a href="' . esc_url( $link ) . '">';
-        echo '<div class="thumbnail_container" style="width:40px;height:40px;overflow:hidden;">';
-        $thumbnail_attr = array(
-            'class' => 'attachment-shop_thumbnail wp-post-image',
-            'alt' => esc_attr( $product->get_title() ),
-            'style' => 'width:40px;height:40px;object-fit:cover;'
-        );
-        echo get_the_post_thumbnail( $product_id, 'shop_thumbnail', $thumbnail_attr );
-        echo '</div>';
-        echo '</a>';
+            // ← l'attributo alt → get_title() 
+            $thumbnail_attr = [
+              'class' => 'attachment-bundle_thumbnail wp-post-image',
+              'alt'   => esc_attr( $product->get_title() ),
+            ];
+            echo '<a href="' . esc_url( $link ) . '">';
+              echo '<div class="thumbnail_container">';
+                echo get_the_post_thumbnail( $product_id, 'shop_thumbnail', $thumbnail_attr );
+              echo '</div>';
+            echo '</a>';
 
-        echo '<div class="inner_product_header">';
-        echo '<a href="' . esc_url( $link ) . '">';
-        echo '<h3 class="product-name">' . esc_html( $product->get_title() ) . '</h3>';
-        echo '</a>';
+            echo '<div class="inner_product_header">';
+              echo '<a href="' . esc_url( $link ) . '">';
+                echo '<h3 class="product-name">' . esc_html( $product->get_title() ) . '</h3>';
+              echo '</a>';
 
-        echo '<span class="price product-price">' . wp_kses_post( $product->get_price_html() ) . '</span>';
-        echo '<input type="checkbox" name="price_' . esc_attr( $product_id ) . '" value="' . esc_attr( $product->get_price() ) . '" onclick="selectBundleItem(this,\'' . esc_js( $product_kit_id ) . '\')"' . $checked . ' />';
-        echo '<input type="hidden" name="product_id" value="' . esc_attr( $product_id ) . '"/>';
-        echo '<input type="hidden" name="display_price" value="' . esc_attr( wc_get_price_to_display( $product ) ) . '"/>';
-        echo '<input type="hidden" name="title" value="' . esc_attr( $product->get_title() ) . '"/>';
-        echo '</div>';
-        echo '</div>';
+              // get_price_html() è già un metodo :contentReference[oaicite:5]{index=5}
+              echo '<span class="price product-price">' . wp_kses_post( $product->get_price_html() ) . '</span>';
+
+              // ← usa get_price() anziché ->price :contentReference[oaicite:6]{index=6}
+              echo '<input type="checkbox" name="price_' . esc_attr( $product_id ) . '"'
+                 . ' value="' . esc_attr( $product->get_price() ) . '"'
+                 . ' onclick="selectBundleItem(this,\'' . esc_js( $product_kit_id ) . '\')"'
+                 . $checked . ' />';
+
+              // hidden inputs: usa get_id(), get_price(), get_title()
+              echo '<input type="hidden" name="product_id" value="' . esc_attr( $product_id ) . '"/>';
+              echo '<input type="hidden" name="display_price" value="' . esc_attr( wc_get_price_to_display( $product ) ) . '"/>';
+              echo '<input type="hidden" name="title" value="' . esc_attr( $product->get_title() ) . '"/>';
+
+            echo '</div>'; // .inner_product_header
+
+          echo '</div>'; // .inner_product
         echo '</li>';
     }
     wp_reset_postdata();
@@ -940,14 +954,11 @@ function thps_display_products_list(
           }
 */
 			if ( $show_img ) {
-					echo '<div class="thumbnail_container" style="width:' . esc_attr($img_width) . ';height:' . esc_attr($img_height) . ';overflow:hidden;display:inline-block;vertical-align:middle;margin-right:10px;">';
-					$thumbnail_attr = array(
-						'class' => 'attachment-shop_thumbnail wp-post-image',
-						'alt' => esc_attr($product->get_title()),
-						'style' => 'width:' . esc_attr($img_width) . ';height:' . esc_attr($img_height) . ';object-fit:cover;'
-					);
-					echo get_the_post_thumbnail($product_id, 'shop_thumbnail', $thumbnail_attr);
-					echo '</div>';
+					echo get_the_post_thumbnail(
+					$product_id,
+					'shop_thumbnail',
+					array( 'style' => "width:{$img_width};height:{$img_height};" )
+				);
 			}
 
 
@@ -959,7 +970,11 @@ function thps_display_products_list(
           }
 
           echo '<td>';
-          echo '<input type="checkbox" name="price_' . esc_attr( $product_id ) . '" class="item-price ' . esc_attr( $ex_class ) . '" value="' . esc_attr( $price ) . '" onclick="selectBundleItem(this,\'' . esc_js( $product_kit_id ) . '\')" ' . $checked . '/>';
+          echo '<input type="checkbox" name="price_' . esc_attr( $product_id ) . '"'
+             . ' class="item-price ' . esc_attr( $ex_class ) . '"'
+             . ' value="' . esc_attr( $price ) . '"'
+             . ' onclick="selectBundleItem(this,\'' . esc_js( $product_kit_id ) . '\')"'
+             . $checked . '/>';
           echo '</td>';
         echo '</tr>';
 
