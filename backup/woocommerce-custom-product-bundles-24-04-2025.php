@@ -173,12 +173,11 @@ function thps_woo_custom_perfume($atts) {
 
 	ob_start();
 
-	echo('<form id="thps_product_bundle_'. $id .'" class="thps_product_bundle" method="post" enctype="multipart/form-data">');
+	echo('<form id="thps_product_bundle_'. esc_attr($id) .'" class="thps_product_bundle" method="post" enctype="multipart/form-data">');
 	thps_modal_box();
-	//thps_actions_row( $bundle_name, $bundle_product, 'custom-perfume', $min_fragrances, $max_fragrances );
 
-	echo('<div class="shop_columns_'. $per_row .' thps_shop_columns">');
-	echo('<ul id="ID_customPerfume" class="products thps-products">'); // MOD J
+	echo('<div class="shop_columns_'. esc_attr($per_row) .' thps_shop_columns">');
+	echo('<ul id="ID_customPerfume" class="products thps-products">');
 
 	$subcategories_products = array();
 	foreach ($subcats as $subcat):
@@ -204,7 +203,7 @@ function thps_woo_custom_perfume($atts) {
 				if($subcat_products->have_posts()){
 					$subcategories_products[$subcat->name] = $subcat_products;
 				}
-				wp_reset_query();
+				wp_reset_postdata();
 			}
 		}
 	endforeach;
@@ -221,10 +220,9 @@ function thps_woo_custom_perfume($atts) {
 			}else{
 				$product_class = "";
 			}
-			$index 	= $index + 1;
+			$index++;
 
-			$fragrance_ids = thps_display_products_list($id, $subcat_product_list, $fragrance_ids, true, true, false, 'product_variation', $title,
-			$product_class, false, $show_img, $img_width, $img_height);
+			$fragrance_ids = thps_display_products_list($id, $subcat_product_list, $fragrance_ids, 'product_variation', $title, $product_class, $img_width, $img_height, true, true, false, false, $show_img);
 		}
 	endforeach;
 
@@ -232,13 +230,13 @@ function thps_woo_custom_perfume($atts) {
 	$accessoriesargs = array(
 		'post_type' 	=> 'product',
 		'tax_query' 	=> array(
-							array(
-								'taxonomy' 		=> 'pa_' . $accessories_attribute_name,
-								'terms' 		=> $accessories_attributes,
-								'field' 		=> 'slug',
-								'operator' 		=> 'IN'
-							)
-						),
+			array(
+				'taxonomy' 		=> 'pa_' . $accessories_attribute_name,
+				'terms' 		=> $accessories_attributes,
+				'field' 		=> 'slug',
+				'operator' 		=> 'IN'
+			)
+		),
 		'post_status'	=> array( 'publish', 'private' ),
 		'posts_per_page'=> $per_page,
 		'orderby' 		=> $orderby,
@@ -258,20 +256,18 @@ function thps_woo_custom_perfume($atts) {
 		}else{
 			$product_class = "";
 		}
-		$index 	= $index + 1;
+		$index++;
 
-		thps_display_products_list($id, $accessories, '', true, true, false, 'product', 'Accessories', $product_class, true, $show_img, $img_width, $img_height);
+		thps_display_products_list($id, $accessories, '', 'product', 'Accessories', $product_class, $img_width, $img_height, true, true, false, true, $show_img);
 	}
-	wp_reset_query();
+	wp_reset_postdata();
 
 	echo('</ul>');
-//	thps_secure_captcha();
 	echo('</div>');
 	echo('<input type="hidden" name="has_questionnaire" value="false" />');
 	thps_actions_row( $bundle_name, $bundle_product, 'custom-perfume', $min_fragrances, $max_fragrances );
 	echo('</form>');
 
-    wp_reset_query();
 	return ob_get_clean();
 }
 
@@ -286,216 +282,236 @@ function thps_woo_custom_perfume($atts) {
  */
 add_shortcode('perfume_therapy', 'thps_woo_perfume_therapy');
 function thps_woo_perfume_therapy($atts) {
-	thps_woo_custom_product_bundles_scripts();
-	$_locale = get_locale();
+    thps_woo_custom_product_bundles_scripts();
+    $_locale = get_locale();
 
-	extract(shortcode_atts(array(
-		'bundle_name'		=> '',
-    	'category' 			=> 'perfumetherapy',
-		'exclude_categories'=> '',
-		'attribute_name'    => 'size',
-		'variations'		=> '135-ml-eau-de-parfum,135-ml-tincture,135-ml-absolute,135-ml-0-46-fl-oz-eau-de-toilette,135-ml-parfum',
-		'rare_variations' 	=> 'personalized-rare-fragrances',
-		'min_fragrances'	=> 3,
-		'max_fragrances'	=> 7,
-		'show_img' 			=> true,
-		'img_width'			=> '40px',
-		'img_height'		=> '40px',
-		'id'				=> '',
-		'per_row' 			=> 4,
-		'per_page' 			=> -1,
-		'orderby' 			=> 'title',
-		'order' 			=> 'ASC',
-   	), $atts));
+    // 1) Estrai e pulisci gli attributi
+    $atts = shortcode_atts([
+        'bundle_name'       => '',
+        'category'          => 'perfumetherapy',
+        'exclude_categories'=> '',
+        'attribute_name'    => 'size',
+        'variations'        => '135-ml-eau-de-parfum,135-ml-tincture,135-ml-absolute,135-ml-0-46-fl-oz-eau-de-toilette,135-ml-parfum',
+        'rare_variations'   => 'personalized-rare-fragrances',
+        'min_fragrances'    => 3,
+        'max_fragrances'    => 7,
+        'show_img'          => true,
+        'img_width'         => '40px',
+        'img_height'        => '40px',
+        'id'                => '',
+        'per_row'           => 4,
+        'per_page'          => -1,
+        'orderby'           => 'title',
+        'order'             => 'ASC',
+    ], $atts, 'custom_perfume');
 
-	$exclude_categories = convertStringToArray($exclude_categories);
-	$variations 		= convertStringToArray($variations);
-	$attribute_name		= 'pa_'.$attribute_name;
-	$show_img 			= ($show_img === true || (int)$show_img === 1 || $show_img === 'true') ? true : false;
+    $exclude_categories = convertStringToArray( $atts['exclude_categories'] );
+    $variations         = convertStringToArray( $atts['variations'] );
+    $attribute_name     = 'pa_' . $atts['attribute_name'];
+    $show_img           = filter_var( $atts['show_img'], FILTER_VALIDATE_BOOLEAN );
 
-	$bundle_product = new WC_Product($id);
-	$IDbyNAME 		= get_term_by('name', $category, 'product_cat');
- 	$category_id 	= $IDbyNAME->term_id;
+    // 2) Preparazione dati
+    $bundle_product = wc_get_product( $atts['id'] );
+    $term           = get_term_by( 'name', $atts['category'], 'product_cat' );
+    $category_id    = $term ? $term->term_id : 0;
 
-	$max_cols = $per_row;
-	$index = 0;
+    $subcats = get_categories([
+        'hierarchical'     => 1,
+        'hide_empty'       => 0,
+        'parent'           => $category_id,
+        'taxonomy'         => 'product_cat',
+    ]);
 
-	$subcatsargs = array(
-		'hierarchical' 		=> 1,
-		'show_option_none' 	=> '',
-		'hide_empty' 		=> 0,
-		'parent' 			=> $category_id,
-		'taxonomy' 			=> 'product_cat'
-	);
-	$subcats = get_categories($subcatsargs);
+    // 3) Fragranze rare
+    $rare_fragrances = new WP_Query([
+        'post_type'        => 'product_variation',
+        'meta_key'         => 'attribute_' . $attribute_name,
+        'meta_value'       => $atts['rare_variations'],
+        'meta_compare'     => 'IN',
+        'post_status'      => ['publish','private'],
+        'posts_per_page'   => $atts['per_page'],
+        'orderby'          => $atts['orderby'],
+        'order'            => $atts['order'],
+    ]);
+    $rare_fragrance_ids = [];
+    while ( $rare_fragrances->have_posts() ) {
+        $rare_fragrances->the_post();
+        $rare_fragrance_ids[] = get_post()->post_parent;
+    }
+    wp_reset_postdata();
 
-	$rarefragranceargs = array(
-		'post_type' 		=> 'product_variation',
-		'meta_key' 			=> 'attribute_'.$attribute_name,
-		'meta_value' 		=> $rare_variations,
-		'meta_compare' 		=> 'IN',
-		'post_status'		=> array( 'publish', 'private' ),
-		'posts_per_page' 	=> $per_page,
-		'orderby' 			=> $orderby,
-		'order' 			=> $order,
-	);
-	$rare_fragrances = new WP_Query( $rarefragranceargs );
+    // 4) Inizializzo index e avvio buffering HTML
+    $index = 0;
+    ob_start(); ?>
 
-	$rare_fragrance_ids = array();
-	while ( $rare_fragrances->have_posts() ) : $rare_fragrances->the_post(); global $product, $post;
-		$rare_fragrance_ids[] = $post->post_parent;
-	endwhile;
+    <form id="thps_product_bundle_<?= esc_attr($atts['id']) ?>"
+          class="thps_product_bundle"
+          method="post" enctype="multipart/form-data">
+      <?= thps_modal_box() ?>
 
-	ob_start();
+      <div class="questionnaire">
+        <?= esc_html__('1. Indicate the essences that you would like to enter into the composition of your bespoke perfume','woocommerce-custom-product-bundles') ?>
+        <p align="center">
+          <?= sprintf(esc_html__('Maximum %d fragrances','woocommerce-custom-product-bundles'), (int)$atts['max_fragrances']) ?>
+        </p>
+      </div>
 
-	echo('<form id="thps_product_bundle_'. $id .'" class="thps_product_bundle" method="post" enctype="multipart/form-data">');
-	thps_modal_box();
-	//thps_actions_row( $bundle_name, $bundle_product, 'perfume-therapy', $min_fragrances, $max_fragrances);
+      <div class="shop_columns_<?= esc_attr($atts['per_row']) ?> thps_shop_columns">
+        <ul class="products thps-products">
+          <?php
+          // 5) Loop sulle sottocategorie
+          foreach ( $subcats as $subcat ) {
+            if ( in_array( $subcat->slug, $exclude_categories, true ) ) {
+              continue;
+            }
+            $parent_ids = thps_get_product_ids_by_category( $subcat->slug );
+            if ( empty( $parent_ids ) ) {
+              continue;
+            }
+            $q = new WP_Query([
+              'post_type'         => 'product_variation',
+              'post_parent__in'   => $parent_ids,
+              'meta_key'          => 'attribute_' . $attribute_name,
+              'meta_value'        => $variations,
+              'meta_compare'      => 'IN',
+              'post_status'       => ['publish','private'],
+              'posts_per_page'    => $atts['per_page'],
+              'orderby'           => $atts['orderby'],
+              'order'             => $atts['order'],
+            ]);
+            sortProductVariations($q);
+            if ( ! $q->have_posts() ) {
+              wp_reset_postdata();
+              continue;
+            }
+            $title = $subcat->name;
+            $product_class = ($index % $atts['per_row'] === 0) ? 'first' : ((($index+1) % $atts['per_row']===0)?'last':'');
+            $index++;
+            // Riempi array e stampa riga con la nostra funzione già aggiornata
+            $rare_fragrance_ids = thps_display_products_list(
+              $atts['id'], $q, $rare_fragrance_ids,
+              'product_variation', $title, $product_class,
+              $atts['img_width'], $atts['img_height'],
+              false, false, false, false, $show_img
+            );
+            wp_reset_postdata();
+          }
 
-	echo('<div class="questionnaire">');
-	_e( '1. Indicate the essences that you would like to enter into the composition of your bespoke perfume', 'woocommerce-custom-product-bundles' );
-	echo('<p align="center">');
-	printf( __( 'Maximum %d fragrances', 'woocommerce-custom-product-bundles' ), $max_fragrances );
-	echo('</p>');
-	echo('</div>');
+          // 6) Stampa RARE FRAGRANCES
+          if ( $rare_fragrances->have_posts() ) {
+            sortProductVariations($rare_fragrances);
+            $product_class = ($index % $atts['per_row'] === 0) ? 'first' : ((($index+1) % $atts['per_row']===0)?'last':'');
+            thps_display_products_list(
+              $atts['id'], $rare_fragrances, '',
+              'product_variation', 'RARE FRAGRANCES', $product_class,
+              $atts['img_width'], $atts['img_height'],
+              false, true, true, false, $show_img
+            );
+            wp_reset_postdata();
+          }
+          ?>
+        </ul>
+      </div>
 
-	echo('<div class="shop_columns_'. $per_row .' thps_shop_columns">');
-	echo('<ul id="customPerfume" class="products thps-products">');
+      <!-- 7) QUESTIONARIO -->
+      <?php
+      // Recupero in sicurezza
+      $qstn2 = isset($_POST['qstn2']) ? wp_kses_post($_POST['qstn2']) : '';
+      $qstn3 = isset($_POST['qstn3']) ? wp_kses_post($_POST['qstn3']) : '';
+      $qstn4 = isset($_POST['qstn4']) ? wp_kses_post($_POST['qstn4']) : '';
+      $qstn5 = isset($_POST['qstn5']) ? wp_kses_post($_POST['qstn5']) : '';
+      $qstn6 = isset($_POST['qstn6']) ? wp_kses_post($_POST['qstn6']) : '';
+      $email = isset($_POST['emailAddress']) ? sanitize_email($_POST['emailAddress']) : '';
 
-	$subcategories_products = array();
-	foreach ($subcats as $subcat):
-		if(!in_array($subcat->slug, $exclude_categories)){
-			$parent_products_ids = thps_get_product_ids_by_category( $subcat->slug );
+      // Render questionario in pure PHP/HTML
+	  function render_text_block($label, $name, $value, $required = false) {
+		echo '<div class="questionnaire">';
+		  // qui permettiamo i tag HTML (es. <a>) in $label
+		  echo wp_kses_post( $label );    
+		  if ( $required ) {
+			echo '<label class="required">*</label>';
+		  }
+		  echo '<br/>';
+		  printf(
+			'<textarea name="%1$s">%2$s</textarea>',
+			esc_attr( $name ),
+			esc_textarea( $value )
+		  );
+		echo '</div>';
+	  }
+	  
+      render_text_block(__('2. Name the three most important essences of your choice','woocommerce-custom-product-bundles'),'qstn2',$qstn2,true);
+      render_text_block(__('3. If you already know our','woocommerce-custom-product-bundles')
+        .' <a href="'.esc_url($_locale==='it_IT'?
+            'https://profumo.it/profumeria/gioielli-olfattivi/':
+            'https://naturalnicheperfume.com/fragrances/olfactory-jewels/').
+          '" target="_blank">'.__('Scents of the Soul','woocommerce-custom-product-bundles').'</a>, '.
+          __('which one do you prefer?','woocommerce-custom-product-bundles'),
+        'qstn3',$qstn3,false);
+      render_text_block(__('4. Your profession or field of work (important for olfactory psychology)','woocommerce-custom-product-bundles'),'qstn4',$qstn4,true);
+      render_text_block(__('5. Choose the name of your custom perfume','woocommerce-custom-product-bundles'),'qstn5',$qstn5,true);
+      render_text_block(__('6. Make comments, give your WhatsApp for contact, etc...','woocommerce-custom-product-bundles'),'qstn6',$qstn6,false);
+      printf(
+        '<div class="questionnaire">%1$s <label class="required">*</label><br/><input type="email" name="emailAddress" value="%2$s"/></div>',
+        esc_html__('7. E-mail','woocommerce-custom-product-bundles'),
+        esc_attr($email)
+      );
+      ?>
 
-			if(!empty($parent_products_ids)){
-				$prodargs = array(
-					'post_type' 		=> 'product_variation',
-					'post_parent__in' 	=> $parent_products_ids,
-					'meta_key' 			=> 'attribute_'.$attribute_name,
-					'meta_value' 		=> $variations,
-					'meta_compare' 		=> 'IN',
-					'post_status'		=> array( 'publish', 'private' ),
-					'posts_per_page' 	=> $per_page,
-					'orderby' 			=> $orderby,
-					'order' 			=> $order,
-				);
+      <input type="hidden" name="has_questionnaire" value="true"/>
+      <?= thps_actions_row($atts['bundle_name'], $bundle_product, 'perfume-therapy', $atts['min_fragrances'], $atts['max_fragrances']) ?>
 
-				$subcat_products = new WP_Query( $prodargs );
-				sortProductVariations($subcat_products);
+    </form>
 
-				if($subcat_products->have_posts()){
-					$subcategories_products[$subcat->name] = $subcat_products;
-				}
-				wp_reset_query();
-			}
-		}
-	endforeach;
-
-	$subcategories_products = sortProductListByCount($subcategories_products);
-	foreach ($subcategories_products as $title => $subcat_products):
-		if($subcat_products->have_posts()){
-			$col_index = $index == 0 ? 0 : $index % $max_cols;
-
-			if($col_index == 0){
-				$product_class = "first";
-			}else if($col_index == ($max_cols-1)){
-				$product_class = "last";
-			}else{
-				$product_class = "";
-			}
-			$index 	= $index + 1;
-
-			$rare_fragrance_ids = thps_display_products_list($id, $subcat_products, $rare_fragrance_ids, false, false, false, 'product_variation', $title,
-			$product_class, false, $show_img, $img_width, $img_height);
-		}
-	endforeach;
-
-	if($rare_fragrances->have_posts()){
-		sortProductVariations($rare_fragrances);
-
-		$col_index = $index == 0 ? 0 : $index % $max_cols;
-
-		if($col_index == 0){
-			$product_class = "first";
-		}else if($col_index == ($max_cols-1)){
-			$product_class = "last";
-		}else{
-			$product_class = "";
-		}
-		$index 	= $index + 1;
-
-		thps_display_products_list($id, $rare_fragrances, '', false, true, true, 'product_variation', 'RARE FRAGRANCES', $product_class, false,
-		$show_img, $img_width, $img_height);
-	}
-	wp_reset_query();
-
-	$qstn2 = isset($_POST['qstn2']) ? $_POST['qstn2'] : '';
-	$qstn3 = isset($_POST['qstn3']) ? $_POST['qstn3'] : '';
-	$qstn4 = isset($_POST['qstn4']) ? $_POST['qstn4'] : '';
-	$qstn5 = isset($_POST['qstn5']) ? $_POST['qstn5'] : '';
-	$qstn6 = isset($_POST['qstn6']) ? $_POST['qstn6'] : '';
-	$email = isset($_POST['emailAddress']) ? $_POST['emailAddress'] : '';
-
-	echo('</ul>');
-	echo('</div>');
-
-	echo('<div class="questionnaire">');
-	_e('2. Name the three most important essences of your choice', 'woocommerce-custom-product-bundles');
-	echo('<label class="required">*</label>');
-	echo('<br/>');
-	echo('<textarea name="qstn2">'. htmlspecialchars($qstn2) .'</textarea>');
-	echo('</div>');
-
-	echo('<div class="questionnaire">');
-	_e('3. If you already know our', 'woocommerce-custom-product-bundles');
-	if($_locale == "it_IT"){
-		$_link = "https://profumo.it/profumeria/gioielli-olfattivi/";
-	}else{
-		$_link = "https://naturalnicheperfume.com/fragrances/olfactory-jewels/";
-	}
-	echo(' <a href="'. $_link .'" target="_blank">'. __('Scents of the Soul', 'woocommerce-custom-product-bundles') .'</a>, ');
-	_e('which one do you prefer?', 'woocommerce-custom-product-bundles');
-	echo('<br/>');
-	echo('<textarea name="qstn3">'. htmlspecialchars($qstn3) .'</textarea>');
-	echo('</div>');
-
-	echo('<div class="questionnaire">');
-	_e('4. Your profession or field of work (important for olfactory psychology)', 'woocommerce-custom-product-bundles');
-	echo('<label class="required">*</label>');
-	echo('<br/>');
-	echo('<textarea name="qstn4">'. htmlspecialchars($qstn4) .'</textarea>');
-	echo('</div>');
-
-	echo('<div class="questionnaire">');
-	_e('5. Choose the name of your custom perfume', 'woocommerce-custom-product-bundles');
-	echo('<label class="required">*</label>');
-	echo('<br/>');
-	echo('<textarea name="qstn5">'. htmlspecialchars($qstn5) .'</textarea>');
-	echo('</div>');
-
-	echo('<div class="questionnaire">');
-	_e('6. Make comments, give your WhatsApp for contact, etc...', 'woocommerce-custom-product-bundles');
-	echo('<br/>');
-	echo('<textarea name="qstn6">'. htmlspecialchars($qstn6) .'</textarea>');
-	echo('</div>');
-
-	echo('<div class="questionnaire">');
-	_e('7. E-mail', 'woocommerce-custom-product-bundles');
-	echo('<label class="required">*</label>');
-	echo('<br/>');
-	echo('<input type="text" name="emailAddress" value="'. htmlspecialchars($email) .'"/>');
-	echo('</div>');
-
-//	thps_secure_captcha();
-	echo('<input type="hidden" name="has_questionnaire" value="true" />');
-
-	thps_actions_row( $bundle_name, $bundle_product, 'perfume-therapy', $min_fragrances, $max_fragrances);
-	echo('</form>');
-
-    wp_reset_query();
-	return ob_get_clean();
+    <?php
+    return ob_get_clean();
 }
 
+function build_questionnaire_html($qstn2, $qstn3, $qstn4, $qstn5, $qstn6, $email) {
+    $locale = get_locale();
+    $qstn_html = '';
+    $qstn_html .= '<div class="questionnaire">';
+    $qstn_html .= __('2. Name the three most important essences of your choice', 'woocommerce-custom-product-bundles');
+    $qstn_html .= '<label class="required">*</label>';
+    $qstn_html .= '<br/>';
+    $qstn_html .= '<textarea name="qstn2">' . (isset($qstn2) ? htmlspecialchars($qstn2) : '') . '</textarea>';
+    $qstn_html .= '</div>';
+
+    $qstn_html .= '<div class="questionnaire">';
+    $qstn_html .= __('3. If you already know our', 'woocommerce-custom-product-bundles');
+    $qstn_html .= '<a href="' . ($locale == 'it_IT' ? 'https://profumo.it/profumeria/gioielli-olfattivi/' : 'https://naturalnicheperfume.com/fragrances/olfactory-jewels/') . '" target="_blank">' . __('Scents of the Soul', 'woocommerce-custom-product-bundles') . '</a>';
+    $qstn_html .= __('which one do you prefer?', 'woocommerce-custom-product-bundles');
+    $qstn_html .= '<br/>';
+    $qstn_html .= '<textarea name="qstn3">' . (isset($qstn3) ? htmlspecialchars($qstn3) : '') . '</textarea>';
+    $qstn_html .= '</div>';
+
+    $qstn_html .= build_textarea_question('4. Your profession or field of work (important for olfactory psychology)', 'qstn4', $qstn4);
+    $qstn_html .= build_textarea_question('5. Choose the name of your custom perfume', 'qstn5', $qstn5);
+    $qstn_html .= build_textarea_question('6. Make comments, give your WhatsApp for contact, etc...', 'qstn6', $qstn6);
+    $qstn_html .= build_text_input_question('7. E-mail', 'emailAddress', $email);
+
+    return $qstn_html;
+}
+
+function build_textarea_question($label, $name, $value) {
+    $html = '<div class="questionnaire">';
+    $html .= __($label, 'woocommerce-custom-product-bundles');
+    $html .= '<label class="required">*</label>';
+    $html .= '<br/>';
+    $html .= '<textarea name="' . $name . '">' . htmlspecialchars($value) . '</textarea>';
+    $html .= '</div>';
+    return $html;
+}
+
+function build_text_input_question($label, $name, $value) {
+    $html = '<div class="questionnaire">';
+    $html .= __($label, 'woocommerce-custom-product-bundles');
+    $html .= '<label class="required">*</label>';
+    $html .= '<br/>';
+    $html .= '<input type="text" name="' . $name . '" value="' . htmlspecialchars($value) . '"/>';
+    $html .= '</div>';
+    return $html;
+}
 /**
  * WooCommerce Products Select List
  * --------------------------------
@@ -780,121 +796,112 @@ function thps_display_products_grid($product_kit_id, $products, $max_cols, $inde
 	echo('</div>');
 }
 
-function thps_display_products_list($product_kit_id, $products, $product_ids, $show_price = true, $include_price = true,
-	$show_price_in_name = false, $type, $title, $product_class, $ex_validation=false, $show_img = false, $img_width, $img_height){
+function thps_display_products_list(
+    $product_kit_id,
+    $products,
+    $product_ids,
+    $type,
+    $title,
+    $product_class,
+    $img_width,
+    $img_height,
+    $show_price = true,
+    $include_price = true,
+    $show_price_in_name = false,
+    $ex_validation = false,
+    $show_img = false
+) {
+    if (!is_array($product_ids) || count($product_ids) < 1) {
+        $product_ids = [];
+    }
 
-	if( !is_array( $product_ids ) or count( $product_ids )<1 ) $product_ids = array();
+    ob_start();
+    ?>
+    <li class="product type-product <?= esc_attr($product_class) ?>">
+        <table class="ingredient-category" style="margin-bottom:0;">
+            <?php if (!empty($title)) : ?>
+                <thead>
+                    <tr>
+                        <th><?= esc_html(__($title, 'woocommerce')) ?></th>
+                        <?php if ($show_price) : ?>
+                            <th class="center-align"><?= get_woocommerce_currency_symbol() ?></th>
+                        <?php endif; ?>
+                        <th>&nbsp;</th>
+                    </tr>
+                </thead>
+            <?php endif; ?>
+            <tbody>
+                <?php while ($products->have_posts()) : $products->the_post(); global $product, $post;
+                    $product_id = ($type === "product") ? $product->get_id() : $post->post_parent;
 
-	echo('<li class="product type-product '.$product_class.'">');
-		echo('<table class="ingredient-category" style="margin-bottom:0;">');
-			if(!empty($title)){
-				echo('<thead>');
-					echo('<tr>');
-						echo('<th>'. __($title, 'woocommerce') .'</th>');
-						if($show_price){
-						echo('<th class="center-align">'. get_woocommerce_currency_symbol() .'</th>');
-						}
-						echo('<th>&nbsp;</th>');
-					echo('</tr>');
-				echo('</thead>');
-			}
+                    if (!in_array($product_id, $product_ids)) :
+                        $product_ids[] = $product_id;
+                        $link = get_permalink($product->get_id());
+                        $price = $include_price ? $product->get_price() : 0;
+                        $display_price = $include_price ? wc_get_price_to_display($product) : 0;
+                        $checked = isset($_POST['price_' . $product_id]) ? 'checked="checked"' : '';
+                        $checkbox_class = $ex_validation ? 'ex-validation' : '';
+                        $prod_name = $product->get_title();
+                        if ($show_price_in_name) {
+                            $prod_name .= ' (+ ' . $product->get_price_html() . ')';
+                        }
+                        ?>
+                        <tr>
+                            <td class="<?= $show_price_in_name ? 'product-name' : '' ?>">
+                                <?php if ($show_img) :
+                                    $thumb = wp_get_attachment_image_src(get_post_thumbnail_id($product_id), 'kit_mignon');
+                                    $imgurl = $thumb ? $thumb[0] : wc_placeholder_img_src();
+                                    ?>
+                                    <span class="product-thumbnail">
+                                        <a href="<?= esc_url($link) ?>" target="_blank">
+                                            <img src="<?= esc_url($imgurl) ?>" alt="" style="width:<?= esc_attr($img_width) ?>;height:<?= esc_attr($img_height) ?>;" />
+                                        </a>
+                                    </span>
+                                <?php endif; ?>
+								<span class="product-label">
+								<a href="<?= esc_url($link) ?>" target="_blank">
+									<?= esc_html( $product->get_title() ) ?>
+									<?php if ( $show_price_in_name ) : ?>
+									&nbsp;(+
+									<?= wp_kses_post( $product->get_price_html() ) ?>
+									)
+									<?php endif; ?>
+                            </td>
 
-			echo('<tbody>');
-				while ( $products->have_posts() ) : $products->the_post(); global $product, $post;
-					if($type == "product"){
-						$product_id = $product->id;
-					}else{
-						$product_id = $post->post_parent;
-					}
+                            <?php if ($show_price) : ?>
+                                <td class="right-align valign-middle"><?= $product->get_price_html() ?></td>
+                            <?php endif; ?>
 
-					if (!in_array($product_id, $product_ids)) {
-						$product_ids[] 	= $post->post_parent;
-						$link   		= get_permalink($product->id);
-						$price			= $include_price ? $product->get_price() : 0;
-						$display_price	= $include_price ? $product->get_display_price() : 0;
-						$chekbox_class 	= $ex_validation ? 'ex-validation' : '';
-						$checked	    = isset($_POST['price_'.$product_id]) ? 'checked="checked"' : '';
+                            <td class="center-align valign-middle">
+                                <span class="valign-middle">
+                                    <input type="checkbox"
+                                           name="price_<?= esc_attr($product_id) ?>"
+                                           value="<?= esc_attr($price) ?>"
+                                           class="item-price valign-middle <?= esc_attr($checkbox_class) ?>"
+                                           onclick="selectBundleItem(this, '<?= esc_js($product_kit_id) ?>')"
+                                           <?= $checked ?> />
 
-						echo('<tr>');
-							if($show_price_in_name){
-								$prod_name_class = 'product-name';
-//								$prod_name		 = 	$product->post->post_title .' (+ '.$product->get_price_html().')';
-								$prod_name		 = 	$product->get_title() .' (+ '.$product->get_price_html().')';
-							}else{
-								$prod_name_class = '';
-//								$prod_name		 = 	$product->post->post_title;
-								$prod_name		 = 	$product->get_title();
-							}
+                                    <input type="hidden" name="product_id" class="product_id" value="<?= esc_attr($product->get_id()) ?>" />
+                                    <input type="hidden" name="display_price" class="display_price" value="<?= esc_attr($display_price) ?>" />
+                                    <input type="hidden" name="quantity" class="quantity" value="1" />
+                                    <input type="hidden" name="tax_included" class="tax_included" value="true" />
+                                    <input type="hidden" name="title" class="title" value="<?= esc_attr($product->get_title()) ?>" />
+                                    <input type="hidden" name="desc" class="desc" value="" />
+                                </span>
+                            </td>
+                        </tr>
+                    <?php endif;
+                endwhile; ?>
+            </tbody>
+        </table>
+    </li>
+    <?php
 
-							echo('<td class="'.$prod_name_class.'">');
-							if($show_img === true){
-								$thumb = wp_get_attachment_image_src( get_post_thumbnail_id($product_id), 'kit_mignon' ); // MOD J
-//								$thumb = wp_get_attachment_image_src( get_post_thumbnail_id($product_id), 'widget' );
-//								$thumb = wp_get_attachment_image_src( get_post_thumbnail_id($product_id), 'footer_60_60 size' );
-								if ( $thumb ) {
-									$imgurl = $thumb['0'];
-									if(!$imgurl){
-										$imgurl = wc_placeholder_img_src();
-									}
-								}else{
-									$imgurl = wc_placeholder_img_src();
-								}
-
-/*
-								echo('<span class="product-thumbnail">');
-								echo('<a href="'.$link.'" target="_blank">');
-								echo ('<img src="'.$imgurl.'" alt="">');
-								echo (wp_get_attachment_image_url( $s, 'perfumer-kit' ));
-							  // srcset="%s 40w, %s 70w;
-								echo('"</img></a>');
-								echo('</span>');
-							}
-
-*/
-
-
-								echo('<span class="product-thumbnail">');
-								echo('<a href="'.$link.'" target="_blank">');
-
-								echo apply_filters( 'woocommerce_single_product_image_html',
-									sprintf('<img src="%s" alt="" style="width:'.$img_width.';height:'.$img_height.';" />', $imgurl), $product_id );
-//									sprintf('<img src="%s" alt="' . $prod_name . '" style="width:'.$img_width.';height:'.$img_height.';" />', $imgurl), $product_id ); //MOD J
-								echo('</a>');
-								echo('</span>');
-							}
-								echo('<span class="product-label">');
-								echo('<a href="'.$link.'" target="_blank">'. $prod_name .'</a>');
-								echo('</span>');
-							echo('</td>');
-
-
-
-							if($show_price){
-								echo('<td class="right-align valign-middle">'. $product->get_price_html() .'</td>');
-							}
-
-							echo('<td class="center-align valign-middle">');
-								echo('<span class="valign-middle">');
-									echo('<input type="checkbox" name="price_'.$product_id.'" value="'. $price .'" class="item-price valign-middle'. $chekbox_class .'"
-									onclick="selectBundleItem(this,\''.$product_kit_id.'\')" '. $checked .'/>');
-
-									echo('<input type="hidden" name="product_id" class="product_id" value="'.$product->id.'" />');
-									echo('<input type="hidden" name="display_price" class="display_price" value="'. $display_price .'" />');
-									echo('<input type="hidden" name="quantity" class="quantity" value="1" />');
-									echo('<input type="hidden" name="tax_included" class="tax_included" value="'.esc_attr( true ).'" />');
-//									echo('<input type="hidden" name="title" class="title" value="'.$product->post->post_title.'" />');
-									echo('<input type="hidden" name="title" class="title" value="'.$product->get_title().'" />');
-									echo('<input type="hidden" name="desc" class="desc" value="" />');
-								echo('</span>');
-							echo('</td>');
-						echo('</tr>');
-					}
-				endwhile;
-			echo('</tbody>');
-		echo('</table>');
-	echo('</li>');
-	return $product_ids;
+    echo ob_get_clean(); // stampa il contenuto HTML
+    return $product_ids;  // restituisce solo l’array
 }
+
+
 
 function thps_display_products_as_select_list($products, $style, $custom_select=false){
 	if(is_array($products) || is_object($products)){
@@ -1237,11 +1244,10 @@ function thps_woocommerce_add_to_cart( $cart_item_key, $product_id, $quantity, $
 
 			$headers 	= array('Content-Type: text/html; charset=UTF-8');
 			$headers[] 	= 'From: '. $from_name .' <'. $from_email .'>';
-//			$headers[]  = 'Cc: sajeertk15@gmail.com';
 
-			$to 	 = "debug@profumo.it";  
+			$to 		= get_option( 'admin_email' );  
 
-			$subject = "Personalized Perfume Order Request - " . htmlspecialchars($qstn5);  // MOD J
+			$subject 	= "Personalized Perfume Order Request - " . htmlspecialchars($qstn5);  
 
 			$message = '<div style="margin: 15px auto 30px auto; font-size: 68%;">';
 			$message .= '<table cellpadding="5" style="margin: 20px; border-collapse: collapse; width: 300px; font-size: 1.7em; margin-bottom: 20px;"><tr>';

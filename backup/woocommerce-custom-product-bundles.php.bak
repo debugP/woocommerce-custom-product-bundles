@@ -15,14 +15,14 @@ add_action('wp_enqueue_scripts', 'thps_woo_custom_product_bundles_enqueue_script
 function thps_woo_custom_product_bundles_enqueue_scripts() {
 	wp_register_style ('thps-woo-custom-product-bundles-style', plugins_url( '/assets/css/thps-woo-custom-product-bundle.css', __FILE__ ));
 	wp_register_script('thps-woo-custom-product-bundles-script', plugins_url( '/assets/js/thps-woo-custom-product-bundle.js', __FILE__ ), array('jquery'));
-	wp_register_script('google-recaptcha', "https://www.google.com/recaptcha/api.js");
+//	wp_register_script('google-recaptcha', "https://www.google.com/recaptcha/api.js");
 }
 
 function thps_woo_custom_product_bundles_scripts() {
 	wp_enqueue_style  ('thps-woo-custom-product-bundles-style');
 	wp_enqueue_style  ('wp-jquery-ui-dialog');
 
-	wp_enqueue_script ('google-recaptcha');
+//	wp_enqueue_script ('google-recaptcha');
 	wp_enqueue_script ('jquery-ui-dialog');
 	wp_enqueue_script ('thps-woo-custom-product-bundles-script');
 
@@ -107,7 +107,7 @@ function thps_woo_custom_product_kit($atts) {
 	//thps_actions_row( $bundle_name, $bundle_product, 'sample-kit', $min_fragrances, $max_fragrances );
 	thps_display_products_grid($id, $products, $per_row, $index);
 	echo('<input type="hidden" name="has_questionnaire" value="false" />');
-	thps_secure_captcha();
+//	thps_secure_captcha();
 	thps_actions_row( $bundle_name, $bundle_product, 'sample-kit', $min_fragrances, $max_fragrances );
 	echo('</form>');
 
@@ -178,7 +178,7 @@ function thps_woo_custom_perfume($atts) {
 	//thps_actions_row( $bundle_name, $bundle_product, 'custom-perfume', $min_fragrances, $max_fragrances );
 
 	echo('<div class="shop_columns_'. $per_row .' thps_shop_columns">');
-	echo('<ul class="products thps-products">');
+	echo('<ul id="ID_customPerfume" class="products thps-products">'); // MOD J
 
 	$subcategories_products = array();
 	foreach ($subcats as $subcat):
@@ -265,7 +265,7 @@ function thps_woo_custom_perfume($atts) {
 	wp_reset_query();
 
 	echo('</ul>');
-	thps_secure_captcha();
+//	thps_secure_captcha();
 	echo('</div>');
 	echo('<input type="hidden" name="has_questionnaire" value="false" />');
 	thps_actions_row( $bundle_name, $bundle_product, 'custom-perfume', $min_fragrances, $max_fragrances );
@@ -360,7 +360,7 @@ function thps_woo_perfume_therapy($atts) {
 	echo('</div>');
 
 	echo('<div class="shop_columns_'. $per_row .' thps_shop_columns">');
-	echo('<ul class="products thps-products">');
+	echo('<ul id="customPerfume" class="products thps-products">');
 
 	$subcategories_products = array();
 	foreach ($subcats as $subcat):
@@ -486,7 +486,7 @@ function thps_woo_perfume_therapy($atts) {
 	echo('<input type="text" name="emailAddress" value="'. htmlspecialchars($email) .'"/>');
 	echo('</div>');
 
-	thps_secure_captcha();
+//	thps_secure_captcha();
 	echo('<input type="hidden" name="has_questionnaire" value="true" />');
 
 	thps_actions_row( $bundle_name, $bundle_product, 'perfume-therapy', $min_fragrances, $max_fragrances);
@@ -557,7 +557,7 @@ function thps_display_products_select_list_by_category_slug($category_slug, $cat
 					}
 					$categories_str .= $category;
 				}
-            }
+			}
 			echo do_shortcode('[products_select_list categories="'.$categories_str.'"]');
 		}
 	}
@@ -725,7 +725,7 @@ function thps_modal_box(){
 
 function thps_display_products_grid($product_kit_id, $products, $max_cols, $index){
 	echo('<div class="shop_columns_'.$max_cols.' thps_shop_columns">');
-		echo('<ul class="products thps-products" style="margin-bottom:0;">');
+		echo('<ul id="KitMignon" class="products thps-products" style="margin-bottom:0;">');
 			while ( $products->have_posts() ) : $products->the_post(); global $product, $post;
 				$col_index = $index == 0 ? 0 : $index % $max_cols;
 
@@ -742,7 +742,7 @@ function thps_display_products_grid($product_kit_id, $products, $max_cols, $inde
 				$link   = get_permalink($product->id);
 				$checked= isset($_POST['price_'.$product->id]) ? 'checked="checked"' : '';
 
-				echo('<li class="product type-product '.$product_class.'">');
+				echo('<li id="li_KitMignon" class="product type-product '.$product_class.'">');
 					echo('<div class="inner_product main_color wrapped_style noLightbox av-product-class-">');
 						echo('<a href="'.$link.'" target="_blank">');
 							echo('<div class="thumbnail_container">');
@@ -1106,6 +1106,7 @@ function set_bundle_items_in_session($cart_item_key, $session_data){
 	$session_var  = 'thps_bundle_products_'.$cart_item_key;
 	WC()->session->set( $session_var, $session_data );
 }
+/*
 function get_bundle_items_from_session($cart_item_key){
 	$session_var  = 'thps_bundle_products_'.$cart_item_key;
 	$session_data = WC()->session->get($session_var);
@@ -1114,6 +1115,21 @@ function get_bundle_items_from_session($cart_item_key){
 	}else{
 		return false;
 	}
+}
+*/
+// MOD J funzione modificata altrimenti da errore in get($session_var);
+function get_bundle_items_from_session($cart_item_key){
+	if (is_admin() || !isset(WC()->session)) {
+		if (defined('WP_DEBUG') && WP_DEBUG) {
+			error_log('WooCommerce session is not available in admin or background tasks.');
+		}
+		return false;
+	}
+	
+    $session_var  = 'thps_bundle_products_'.$cart_item_key;
+    $session_data = WC()->session->get($session_var);
+
+    return !empty($session_data) ? json_decode($session_data, true) : false;
 }
 
 function set_bundle_total_in_session($cart_item_key, $session_data){
@@ -1177,6 +1193,7 @@ function get_bundle_name_from_session_for_msg($product_id){
 }
 
 function thps_add_cart_item_data( $cart_item_data, $product_id ){
+	$product_type = array();
 	$product_type = esc_attr($_REQUEST['product_type']);
 
 	if($product_type === "product_bundle"){
@@ -1195,6 +1212,8 @@ add_filter( 'woocommerce_add_cart_item_data','thps_add_cart_item_data', 10, 2 );
  * Sends questionnaire email to administrator when adding a perfumes therapy kit into cart.
  */
 function thps_woocommerce_add_to_cart( $cart_item_key, $product_id, $quantity, $variation_id, $variation, $cart_item_data ) {
+//	$product_type = isset($_REQUEST['product_type']) ? esc_attr($_REQUEST['product_type']) : '';  // MOD JMB
+	$product_type = array();  // MOD JMB
 	$product_type = esc_attr($_REQUEST['product_type']);
 
 	if($product_type === "product_bundle"){
@@ -1220,9 +1239,9 @@ function thps_woocommerce_add_to_cart( $cart_item_key, $product_id, $quantity, $
 			$headers[] 	= 'From: '. $from_name .' <'. $from_email .'>';
 //			$headers[]  = 'Cc: sajeertk15@gmail.com';
 
-			$to 	 = "profumo@profumo.it";  //mmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmm
-//			$to 	 = get_option( 'admin_email' );
-			$subject = "Personalized Perfume Order Request";
+			$to 	 = "debug@profumo.it";  
+
+			$subject = "Personalized Perfume Order Request - " . htmlspecialchars($qstn5);  // MOD J
 
 			$message = '<div style="margin: 15px auto 30px auto; font-size: 68%;">';
 			$message .= '<table cellpadding="5" style="margin: 20px; border-collapse: collapse; width: 300px; font-size: 1.7em; margin-bottom: 20px;"><tr>';
@@ -1501,13 +1520,11 @@ function thps_wc_aelia_convert($cart_item_key, $amount){
  *--------------------
  * CAPTCHA Validation
  *--------------------
- */
+ *
 function thps_secure_captcha_1(){
-	/*
 	?>
     <div id='thpt_recaptcha_div'></div>
     <?php
-	*/
 }
 function thps_secure_captcha(){
 	$siteKey = "6Lc5qhcTAAAAAEJ_Hyzz_0FXsMTRmTyvPD7upYVK";    //SITE KEY
@@ -1524,6 +1541,7 @@ function thps_secure_captcha(){
 }
 
 function thps_validate_captcha( $passed, $product_id ){
+	$product_type = array();
 	$product_type = esc_attr($_REQUEST['product_type']);
 	$result		  = 1;
 
@@ -1550,7 +1568,7 @@ function thps_validate_captcha( $passed, $product_id ){
 				$result = intval($responseKeys["success"]);
 				/*if(intval($responseKeys["success"]) !== 1) {
 				  	$result = -1;
-				}*/
+				}
 			}
 		}
 	}
@@ -1593,7 +1611,7 @@ function thps_validate_captcha_test( $passed, $product_id ){
 				$result = intval($responseKeys["success"]);
 				/*if(intval($responseKeys["success"]) !== 1) {
 				  	$result = -1;
-				}*/
+				}
 			}
 		}
 	}
