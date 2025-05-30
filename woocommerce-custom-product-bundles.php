@@ -895,14 +895,17 @@ function thps_display_products_list(
     }
 
     echo '<li class="product ' . esc_attr( $product_class ) . '">';
-    echo '<table class="ingredient-category">';
+    echo '<table class="ingredient-category" style="width:100%;">';
 
     if ( $title ) {
-        echo '<thead><tr><th>' . esc_html( __( $title, 'woocommerce' ) ) . '</th>';
+        echo '<thead><tr>';
+        echo '<th style="width:40px;text-align:center;">' . esc_html__('Image', 'woocommerce-custom-product-bundles') . '</th>';
+        echo '<th style="text-align:left;">' . esc_html( __( $title, 'woocommerce' ) ) . '</th>';
         if ( $show_price ) {
-            echo '<th>' . get_woocommerce_currency_symbol() . '</th>';
+            echo '<th style="text-align:right;width:100px;">' . get_woocommerce_currency_symbol() . '</th>';
         }
-        echo '<th></th></tr></thead>';
+        echo '<th style="width:50px;text-align:center;">' . esc_html__('Select', 'woocommerce-custom-product-bundles') . '</th>';
+        echo '</tr></thead>';
     }
 
     echo '<tbody>';
@@ -910,57 +913,49 @@ function thps_display_products_list(
         $products->the_post();
         global $product;
 
-        $product_id = $product->get_id();           // ← get_id()
-        $link       = get_permalink( $product_id ); // ← get permalink
-        $price      = $include_price ? $product->get_price() : 0;    // ← get_price()
+        $product_id = $product->get_id();
+        $link       = get_permalink( $product_id );
+        $price      = $include_price ? $product->get_price() : 0;
         $checked    = isset( $_POST[ 'price_' . $product_id ] ) ? 'checked' : '';
         $ex_class   = $ex_validation ? 'ex-validation' : '';
 
         echo '<tr>';
-          $prod_name = $product->get_title();
-          if ( $show_price_in_name ) {
-              $prod_name .= ' (+ ' . $product->get_price_html() . ')';
-          }
+        
+        // Colonna Immagine
+        echo '<td style="vertical-align:middle;text-align:center;width:40px;">';
+        if ( $show_img ) {
+            echo '<div class="thumbnail_container" style="width:' . esc_attr($img_width) . ';height:' . esc_attr($img_height) . ';overflow:hidden;display:inline-block;">';
+            $thumbnail_attr = array(
+                'class' => 'attachment-shop_thumbnail wp-post-image',
+                'alt' => esc_attr($product->get_title()),
+                'style' => 'width:' . esc_attr($img_width) . ';height:' . esc_attr($img_height) . ';object-fit:cover;'
+            );
+            echo get_the_post_thumbnail($product_id, 'shop_thumbnail', $thumbnail_attr);
+            echo '</div>';
+        }
+        echo '</td>';
 
-          echo '<td>';
+        // Colonna Nome Prodotto
+        echo '<td style="vertical-align:middle;text-align:left;padding:8px;">';
+        $prod_name = $product->get_title();
+        if ( $show_price_in_name ) {
+            $prod_name .= ' (+ ' . $product->get_price_html() . ')';
+        }
+        echo '<a href="' . esc_url( $link ) . '" style="text-decoration:none;">' . esc_html( $prod_name ) . '</a>';
+        echo '</td>';
 
+        // Colonna Prezzo
+        if ( $show_price ) {
+            echo '<td style="vertical-align:middle;text-align:right;padding:8px;">';
+            echo wp_kses_post( $product->get_price_html() );
+            echo '</td>';
+        }
 
+        // Colonna Checkbox
+        echo '<td style="vertical-align:middle;text-align:center;width:50px;">';
+        echo '<input type="checkbox" name="price_' . esc_attr( $product_id ) . '" class="item-price ' . esc_attr( $ex_class ) . '" value="' . esc_attr( $price ) . '" onclick="selectBundleItem(this,\'' . esc_js( $product_kit_id ) . '\')" ' . $checked . '/>';
+        echo '</td>';
 
-		  /*
-          if ( $show_img ) {
-              $thumb = wp_get_attachment_image_src( get_post_thumbnail_id( $product_id ), 'kit_mignon' );
-              if ( $thumb ) {
-                  echo sprintf(
-                      '<img src="%s" style="width:%s;height:%s;"/>',
-                      esc_url( $thumb[0] ),
-                      esc_attr( $img_width ),
-                      esc_attr( $img_height )
-                  );
-              }
-          }
-*/
-			if ( $show_img ) {
-					echo '<div class="thumbnail_container" style="width:' . esc_attr($img_width) . ';height:' . esc_attr($img_height) . ';overflow:hidden;display:inline-block;vertical-align:middle;margin-right:10px;">';
-					$thumbnail_attr = array(
-						'class' => 'attachment-shop_thumbnail wp-post-image',
-						'alt' => esc_attr($product->get_title()),
-						'style' => 'width:' . esc_attr($img_width) . ';height:' . esc_attr($img_height) . ';object-fit:cover;'
-					);
-					echo get_the_post_thumbnail($product_id, 'shop_thumbnail', $thumbnail_attr);
-					echo '</div>';
-			}
-
-
-          echo '<a href="' . esc_url( $link ) . '">' . esc_html( $prod_name ) . '</a>';
-          echo '</td>';
-
-          if ( $show_price ) {
-              echo '<td>' . wp_kses_post( $product->get_price_html() ) . '</td>';
-          }
-
-          echo '<td>';
-          echo '<input type="checkbox" name="price_' . esc_attr( $product_id ) . '" class="item-price ' . esc_attr( $ex_class ) . '" value="' . esc_attr( $price ) . '" onclick="selectBundleItem(this,\'' . esc_js( $product_kit_id ) . '\')" ' . $checked . '/>';
-          echo '</td>';
         echo '</tr>';
 
         $product_ids[] = $product_id;
