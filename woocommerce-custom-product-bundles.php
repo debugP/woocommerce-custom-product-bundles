@@ -899,7 +899,7 @@ function thps_display_products_list(
 
     if ( $title ) {
         echo '<thead><tr>';
-        echo '<th style="width:40px;text-align:center;white-space:nowrap;">' . esc_html__('Image', 'woocommerce-custom-product-bundles') . '</th>';
+        echo '<th style="width:40px;"></th>'; // Colonna vuota per l'immagine
         echo '<th style="text-align:left;white-space:nowrap;">' . esc_html( __( $title, 'woocommerce' ) ) . '</th>';
         if ( $show_price ) {
             echo '<th style="text-align:right;width:100px;white-space:nowrap;">' . get_woocommerce_currency_symbol() . '</th>';
@@ -924,13 +924,14 @@ function thps_display_products_list(
         // Colonna Immagine
         echo '<td style="vertical-align:middle;text-align:center;width:40px;">';
         if ( $show_img ) {
-            echo '<div class="thumbnail_container" style="width:' . esc_attr($img_width) . ';height:' . esc_attr($img_height) . ';overflow:hidden;display:inline-block;">';
+            echo '<div class="thumbnail_container" style="width:40px;height:40px;overflow:hidden;display:inline-block;">';
+            // Utilizziamo la dimensione kit_mignon (40x40) invece di shop_thumbnail
             $thumbnail_attr = array(
-                'class' => 'attachment-shop_thumbnail wp-post-image',
+                'class' => 'attachment-kit_mignon wp-post-image',
                 'alt' => esc_attr($product->get_title()),
-                'style' => 'width:' . esc_attr($img_width) . ';height:' . esc_attr($img_height) . ';object-fit:cover;'
+                'style' => 'width:40px;height:40px;object-fit:cover;'
             );
-            echo get_the_post_thumbnail($product_id, 'shop_thumbnail', $thumbnail_attr);
+            echo get_the_post_thumbnail($product_id, 'kit_mignon', $thumbnail_attr);
             echo '</div>';
         }
         echo '</td>';
@@ -941,7 +942,7 @@ function thps_display_products_list(
         if ( $show_price_in_name ) {
             $prod_name .= ' (+ ' . $product->get_price_html() . ')';
         }
-        echo '<a href="' . esc_url( $link ) . '" style="text-decoration:none;display:block;text-align:left;">' . esc_html( $prod_name ) . '</a>';
+        echo '<a href="' . esc_url( $link ) . '" style="text-decoration:none;display:block;text-align:left;width:100%;">' . esc_html( $prod_name ) . '</a>';
         echo '</td>';
 
         // Colonna Prezzo
