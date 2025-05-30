@@ -229,49 +229,40 @@ var thps_woo = (function($, window, document) {
 				
 	var _selectBundleItem = function selectBundleItem(elm, bundle_prod_id){
 		var _product_bundle_wrapper = $('#thps_product_bundle_'+bundle_prod_id);
-		var _initialPrice 			= _product_bundle_wrapper.find('.bundle_initial_value').val();
-		var _initialPriceDisplay 	= _product_bundle_wrapper.find('.bundle_initial_display_value').val();
+		var _initialPrice = _product_bundle_wrapper.find('.bundle_initial_value').val();
+		var _initialPriceDisplay = _product_bundle_wrapper.find('.bundle_initial_display_value').val();
 		
-		var _totalPrice 	= parseFloat(_initialPrice);
-		_totalPrice			= isNaN(_totalPrice) ? 0 : _totalPrice;
+		var _totalPrice = parseFloat(_initialPrice);
+		_totalPrice = isNaN(_totalPrice) ? 0 : _totalPrice;
 		
-		var _totalDisplayPrice 	= parseFloat(_initialPriceDisplay);
-		_totalDisplayPrice		= isNaN(_totalDisplayPrice) ? 0 : _totalDisplayPrice;
+		var _totalDisplayPrice = parseFloat(_initialPriceDisplay);
+		_totalDisplayPrice = isNaN(_totalDisplayPrice) ? 0 : _totalDisplayPrice;
 		
 		var bundles = {};
-		_product_bundle_wrapper.find(".item-price:checked").each(function( index ) {
-			var prod_wrapper = $(this).closest('span');	
+		_product_bundle_wrapper.find(".item-price:checked").each(function(index) {
+			var prod_row = $(this).closest('tr');
 			
-		  	var _price  		= parseFloat(this.value);
-			var _product_id 	= prod_wrapper.find('.product_id').val();
-			var _display_price 	= prod_wrapper.find('.display_price').val();
-			var _quantity 		= prod_wrapper.find('.quantity').val();
-			var _taxincluded 	= prod_wrapper.find('.tax_included').val();
-			var _title 			= prod_wrapper.find('.title').val();
-			var _desc 			= prod_wrapper.find('.desc').val();
-						
-			_price 		= isNaN(_price) ? 0 : _price;
-			_totalPrice = _totalPrice + _price;
+			var _price = parseFloat(this.value);
+			var _product_id = prod_row.find('input[name="product_id"]').val();
+			var _display_price = prod_row.find('input[name="display_price"]').val();
+			var _title = prod_row.find('input[name="title"]').val();
 			
-			_display_price     = parseFloat(_display_price);
-			_display_price     = isNaN(_display_price) ? 0 : _display_price;
-			_totalDisplayPrice = _totalDisplayPrice + _display_price;			
-			
-			bundles[ _product_id ] = {						
-				quantity 		: _quantity,
-				price 			: _price,
-				tax_included 	: _taxincluded,
-				title 			: _title,
-				desc 			: _desc
+			bundles[_product_id] = {
+				'price': _price,
+				'display_price': _display_price,
+				'quantity': 1,
+				'tax_included': true,
+				'title': _title
 			};
+			
+			_totalPrice += _price;
+			_totalDisplayPrice += parseFloat(_display_price);
 		});
 		
-		_totalPrice			= isNaN(_totalPrice) ? 0 : _totalPrice.toFixed(2);
-		_totalDisplayPrice	= isNaN(_totalDisplayPrice) ? 0 : _totalDisplayPrice.toFixed(2);
 		_product_bundle_wrapper.find('.bundle_total').val(_totalPrice);
-		_product_bundle_wrapper.find('.bundle_items').val(JSON.stringify( bundles ));
-		_product_bundle_wrapper.find('.bundle_total_display').html(_totalDisplayPrice);
-	}
+		_product_bundle_wrapper.find('.bundle_total_display').html(_totalDisplayPrice.toFixed(2));
+		_product_bundle_wrapper.find('.bundle_items').val(JSON.stringify(bundles));
+	};
 	
 	var _calculateBundleTotal = function calculateBundleTotal(){
 		$('.thps_product_bundle').each(function( index ) {
