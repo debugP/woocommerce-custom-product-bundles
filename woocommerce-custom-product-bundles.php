@@ -942,7 +942,9 @@ function thps_display_products_list(
         if ( $show_price_in_name ) {
             $prod_name .= ' (+ ' . $product->get_price_html() . ')';
         }
-        echo '<a href="' . esc_url( $link ) . '" style="text-decoration:none;display:block;text-align:left;width:100%;">' . esc_html( $prod_name ) . '</a>';
+        echo '<div style="text-align:left;width:100%;">';
+        echo '<a href="' . esc_url( $link ) . '" style="text-decoration:none;display:inline-block;text-align:left;">' . esc_html( $prod_name ) . '</a>';
+        echo '</div>';
         echo '</td>';
 
         // Colonna Prezzo
@@ -959,6 +961,10 @@ function thps_display_products_list(
         // Colonna Checkbox
         echo '<td style="vertical-align:middle;text-align:center;width:50px;">';
         echo '<input type="checkbox" name="price_' . esc_attr( $product_id ) . '" class="item-price ' . esc_attr( $ex_class ) . '" value="' . esc_attr( $price ) . '" onclick="selectBundleItem(this,\'' . esc_js( $product_kit_id ) . '\')" ' . $checked . '/>';
+        // Aggiungiamo gli input hidden necessari per il calcolo del totale
+        echo '<input type="hidden" name="product_id" value="' . esc_attr( $product_id ) . '"/>';
+        echo '<input type="hidden" name="display_price" value="' . esc_attr( wc_get_price_to_display( $product ) ) . '"/>';
+        echo '<input type="hidden" name="title" value="' . esc_attr( $product->get_title() ) . '"/>';
         echo '</td>';
 
         echo '</tr>';
