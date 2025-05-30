@@ -899,12 +899,12 @@ function thps_display_products_list(
 
     if ( $title ) {
         echo '<thead><tr>';
-        echo '<th style="width:40px;text-align:center;">' . esc_html__('Image', 'woocommerce-custom-product-bundles') . '</th>';
-        echo '<th style="text-align:left;">' . esc_html( __( $title, 'woocommerce' ) ) . '</th>';
+        echo '<th style="width:40px;text-align:center;white-space:nowrap;">' . esc_html__('Image', 'woocommerce-custom-product-bundles') . '</th>';
+        echo '<th style="text-align:left;white-space:nowrap;">' . esc_html( __( $title, 'woocommerce' ) ) . '</th>';
         if ( $show_price ) {
-            echo '<th style="text-align:right;width:100px;">' . get_woocommerce_currency_symbol() . '</th>';
+            echo '<th style="text-align:right;width:100px;white-space:nowrap;">' . get_woocommerce_currency_symbol() . '</th>';
         }
-        echo '<th style="width:50px;text-align:center;">' . esc_html__('Select', 'woocommerce-custom-product-bundles') . '</th>';
+        echo '<th style="width:50px;text-align:center;white-space:nowrap;">' . esc_html__('Select', 'woocommerce-custom-product-bundles') . '</th>';
         echo '</tr></thead>';
     }
 
@@ -941,13 +941,17 @@ function thps_display_products_list(
         if ( $show_price_in_name ) {
             $prod_name .= ' (+ ' . $product->get_price_html() . ')';
         }
-        echo '<a href="' . esc_url( $link ) . '" style="text-decoration:none;">' . esc_html( $prod_name ) . '</a>';
+        echo '<a href="' . esc_url( $link ) . '" style="text-decoration:none;display:block;text-align:left;">' . esc_html( $prod_name ) . '</a>';
         echo '</td>';
 
         // Colonna Prezzo
         if ( $show_price ) {
-            echo '<td style="vertical-align:middle;text-align:right;padding:8px;">';
-            echo wp_kses_post( $product->get_price_html() );
+            echo '<td style="vertical-align:middle;text-align:right;padding:8px;white-space:nowrap;">';
+            // Modifica qui per assicurare che il prezzo sia su una riga
+            $price_html = $product->get_price_html();
+            // Rimuovi eventuali spazi extra e assicura che il simbolo della valuta e il prezzo siano sulla stessa riga
+            $price_html = preg_replace('/\s+/', ' ', $price_html);
+            echo wp_kses_post($price_html);
             echo '</td>';
         }
 
