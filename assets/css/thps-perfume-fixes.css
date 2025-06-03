@@ -1,31 +1,42 @@
 /* Fixes for perfume name alignment */
 .ingredient-category .product-label,
 .ingredient-category .product-label a,
-table.ingredient-category span.product-label a {
+table.ingredient-category span.product-label a,
+.ingredient-category td div,
+.ingredient-category td div a {
     text-align: left !important;
-    display: block;
-    width: 100%;
-    white-space: normal;
-    font-size: 16px;
-    color: #222;
-    line-height: 1.4;
-    padding: 5px 0;
+    display: block !important;
+    width: 100% !important;
+    white-space: normal !important;
+    font-size: 16px !important;
+    color: #222 !important;
+    line-height: 1.4 !important;
+    padding: 5px 0 !important;
 }
 
 .ingredient-category .product-label a:hover,
-table.ingredient-category span.product-label a:hover {
-    text-decoration: underline;
-    color: #a81010;
+table.ingredient-category span.product-label a:hover,
+.ingredient-category td div a:hover {
+    text-decoration: underline !important;
+    color: #a81010 !important;
 }
 
 /* Ensure proper spacing between checkbox and text */
 .ingredient-category input[type="checkbox"] {
-    margin-right: 10px;
-    vertical-align: middle;
+    margin-right: 10px !important;
+    vertical-align: middle !important;
 }
 
 /* Ensure proper alignment in table cells */
 .ingredient-category td {
-    vertical-align: middle;
-    padding: 8px;
+    vertical-align: middle !important;
+    padding: 8px !important;
+    text-align: left !important;
+}
+
+/* Override any inline styles */
+.ingredient-category td[style*="text-align"],
+.ingredient-category td div[style*="text-align"],
+.ingredient-category td div a[style*="text-align"] {
+    text-align: left !important;
 } 
