@@ -14,9 +14,23 @@ bdi {/* MOD J */
     text-align: left !important;
     color: #222 !important;
     font-size: 16px !important;
+    display: block !important;
+    width: 100% !important;
+    white-space: normal !important;
 }
 
-table.ingredient-category span.product-label a:hover { text-decoration: underline !important; color: #a81010 !important;} /* MOD J  KIT PROFUMIERE  */
+table.ingredient-category span.product-label a { /*tabella prodotti custom perfume */
+    font-size: 16px !important;
+    text-align: left !important;
+    display: block !important;
+    width: 100% !important;
+    white-space: normal !important;
+}
+
+table.ingredient-category span.product-label a:hover { 
+    text-decoration: underline !important; 
+    color: #a81010 !important;
+}
 
 .questionnaire .error-field{
 	border: 1px solid #ff0000 !important;
@@ -380,7 +394,7 @@ select::-ms-expand {
 }
 
 
-@media only screen and  (min-width: 768px) { /* MOD J */
+@media only screen  (min-width: 768px) { /* MOD J */
 	.thps-products-dropdown-div {
 		margin-bottom: 26px;
 	}
@@ -545,4 +559,22 @@ select::-ms-expand {
 		right: -120px;
 	    top: -47px;
 	}
+}
+
+/* Fix for perfume name alignment */
+.ingredient-category .product-label,
+.ingredient-category .product-label a,
+table.ingredient-category span.product-label a {
+    text-align: left !important;
+    display: block !important;
+    width: 100% !important;
+    white-space: normal !important;
+    font-size: 16px !important;
+    color: #222 !important;
+}
+
+.ingredient-category .product-label a:hover,
+table.ingredient-category span.product-label a:hover {
+    text-decoration: underline !important;
+    color: #a81010 !important;
 }
