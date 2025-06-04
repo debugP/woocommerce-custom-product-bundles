@@ -31,7 +31,7 @@ add_filter(
   
 add_action('wp_enqueue_scripts', 'thps_woo_custom_product_bundles_enqueue_scripts');
 function thps_woo_custom_product_bundles_enqueue_scripts() {
-	wp_register_style ('thps-woo-custom-product-bundles-style', plugins_url( '/assets/css/thps-woo-custom-product-bundle10.css', __FILE__ ));
+	wp_register_style ('thps-woo-custom-product-bundles-style', plugins_url( '/assets/css/thps-woo-custom-product-bundle11.css', __FILE__ ));
 	wp_register_script('thps-woo-custom-product-bundles-script', plugins_url( '/assets/js/thps-woo-custom-product-bundle.js', __FILE__ ), array('jquery'));
 //	wp_register_script('google-recaptcha', "https://www.google.com/recaptcha/api.js");
 }
@@ -788,8 +788,8 @@ function thps_display_products_grid( $product_kit_id, $products, $max_cols, $ind
             'class'	=> "attachment-bundle_thumbnail wp-post-image",
             'alt'	=> trim( strip_tags( $post->post_title ) )
         );
-        // Use get_the_post_thumbnail with defined attributes
-        echo get_the_post_thumbnail( $product_id, 'shop_thumbnail', $thumbnail_attr );
+        // Use get_the_post_thumbnail with 'shop_mignon' size and defined attributes
+        echo get_the_post_thumbnail( $product_id, 'shop_mignon', $thumbnail_attr );
 
         echo '</div>';
         echo '</a>';
@@ -806,10 +806,10 @@ function thps_display_products_grid( $product_kit_id, $products, $max_cols, $ind
         
         echo '<input type="hidden" name="product_id" class="product_id" value="' . esc_attr( $product_id ) . '" />';
         echo '<input type="hidden" name="display_price" class="display_price" value="' . esc_attr( wc_get_price_to_display( $product ) ) . '" />';
-        echo '<input type="hidden" name="quantity" class="quantity" value="1" />
-		<input type="hidden" name="tax_included" class="tax_included" value="' . esc_attr( true ) . '" />';
-        echo '<input type="hidden" name="title" class="title" value="' . esc_attr( $product->get_title() ) . '" />
-		<input type="hidden" name="desc" class="desc" value="" />';
+        echo '<input type="hidden" name="quantity" class="quantity" value="1" />';
+		echo '<input type="hidden" name="tax_included" class="tax_included" value="' . esc_attr( true ) . '" />';
+        echo '<input type="hidden" name="title" class="title" value="' . esc_attr( $product->get_title() ) . '" />';
+		echo '<input type="hidden" name="desc" class="desc" value="" />';
 
         echo '</span>';
         echo '</div>';
