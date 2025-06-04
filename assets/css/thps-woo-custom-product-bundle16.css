@@ -48,23 +48,23 @@ table.ingredient-category span.product-label a:hover,
     display: flex !important;
     flex-wrap: wrap !important;
     margin: 0 -10px !important;
-    padding: 0 !important; /* Aggiunto per resetare padding lista */
+    padding: 0 !important; /* Added to reset list padding */
 }
 
 .shop_columns_6.thps_shop_columns ul.products.thps-products li.product {
     width: calc(16.666% - 20px) !important;
     min-width: 90px !important;
     margin: 10px !important;
-    float: none !important; /* Rimosso float */
-    clear: none !important; /* Rimosso clear */
-    list-style: none !important; /* Rimosso bullet point */
+    float: none !important; /* Removed float */
+    clear: none !important; /* Removed clear */
+    list-style: none !important; /* Removed bullet point */
 }
 
 /* Transparent border for grid cell */
 .shop_columns_6.thps_shop_columns ul.products.thps-products li.product .inner_product {
     border: 0 !important;
-    box-shadow: none !important; /* Rimuovi eventuali ombre */
-    background-color: transparent !important; /* Assicura sfondo trasparente se necessario */
+    box-shadow: none !important; /* Remove any box shadow */
+    background-color: transparent !important; /* Ensure transparent background if needed */
 }
 
 .shop_columns_6.thps_shop_columns ul.products.thps-products li.product .thumbnail_container {
@@ -90,8 +90,8 @@ table.ingredient-category span.product-label a:hover,
 .thps_shop_columns .inner_product_header h3.product-name {
     font-weight: 700 !important; /* Grassetto */
     color: #555 !important; /* Colore richiesto */
-    font-size: 16px !important; /* Mantieni dimensione o regola se necessario */
-    margin-bottom: 5px !important; /* Spazio sotto il nome */
+    font-size: 16px !important; /* Keep current size or adjust if needed */
+    margin-bottom: 5px !important; /* Space below name */
 }
 
 .thps_shop_columns .inner_product_header span.price,
@@ -101,7 +101,7 @@ table.ingredient-category span.product-label a:hover,
 }
 
 .thps_shop_columns .inner_product_header span.price {
-    margin-right: 10px !important; /* Spazio tra prezzo e checkbox */
+    margin-right: 10px !important; /* Space between price and checkbox */
 }
 
 /* Fixes for grid layout in mobile view */
@@ -151,7 +151,7 @@ table.ingredient-category span.product-label a:hover,
     
     /* Product name style in mobile grid view */
     .thps_shop_columns .inner_product_header h3.product-name {
-        font-size: 14px !important; /* Mantieni dimensione mobile se diversa */
+        font-size: 14px !important; /* Keep mobile size if different */
         font-weight: 700 !important;
         color: #555 !important;
         margin-bottom: 5px !important;
@@ -159,7 +159,7 @@ table.ingredient-category span.product-label a:hover,
     
     .thps_shop_columns .inner_product_header .price,
     .thps_shop_columns .inner_product_header span.amount {
-        font-size: 14px !important; /* Mantieni dimensione mobile se diversa */
+        font-size: 14px !important; /* Keep mobile size if different */
     }
     
     /* Adjust spacing for the checkbox */
@@ -174,3 +174,9 @@ table.ingredient-category span.product-label a:hover,
         vertical-align: middle !important;
     }
 } 
+/* PER MOSTRARE LE IMMAGINI DEL MIGNON SU DUE COLONNE SU MOBILE */
+.responsive #top #main li#li_KitMignon {
+    width: 42% !important;
+    float: left;
+} /* MOD J*/
+/* PER MOSTRARE LE IMMAGINI DEL MIGNON SU DUE COLONNE SU MOBILE FINE */
