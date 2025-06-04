@@ -781,15 +781,17 @@ function thps_display_products_grid( $product_kit_id, $products, $max_cols, $ind
         echo '<li id="li_KitMignon" class="product type-product ' . esc_attr( $product_class ) . '">';
         echo '<div class="inner_product main_color wrapped_style noLightbox av-product-class-">';
         echo '<a href="' . esc_url( $link ) . '" target="_blank">';
-        echo '<div class="thumbnail_container">';
+        echo '<div class="thumbnail_container" style="width:90px;height:90px;overflow:hidden;display:block;margin:0 auto 10px auto;">';
         
         // Define thumbnail attributes for the grid view
         $thumbnail_attr = array(
-            'class'	=> "attachment-bundle_thumbnail wp-post-image",
-            'alt'	=> trim( strip_tags( $post->post_title ) )
+            'class' => "attachment-shop_mignon wp-post-image",
+            'alt' => trim(strip_tags($post->post_title)),
+            'style' => 'width:90px;height:90px;object-fit:cover;'
         );
+        
         // Use get_the_post_thumbnail with 'shop_mignon' size and defined attributes
-        echo get_the_post_thumbnail( $product_id, 'shop_mignon', $thumbnail_attr );
+        echo get_the_post_thumbnail($product_id, 'shop_mignon', $thumbnail_attr);
 
         echo '</div>';
         echo '</a>';
@@ -801,15 +803,15 @@ function thps_display_products_grid( $product_kit_id, $products, $max_cols, $ind
 
         echo '<span class="price product-price">' . wp_kses_post( $product->get_price_html() ) . '</span>';
         echo '<span style="margin-left:5px;">';
-        echo '<input type="checkbox" name="price_' . esc_attr( $product_id ) . '" value="' . esc_attr( $product->get_price() ) . '" class="item-price"
-        onclick="selectBundleItem(this,\'' . esc_js( $product_kit_id ) . '\')"' . $checked . ' />';
+        echo '<input type="checkbox" name="price_' . esc_attr( $product_id ) . '" value="' . esc_attr( $product->get_price() ) . '" class="item-price" onclick="selectBundleItem(this,\'' . esc_js( $product_kit_id ) . '\')"' . $checked . ' />';
         
+        // Ensure all required hidden inputs are present with correct names and classes
         echo '<input type="hidden" name="product_id" class="product_id" value="' . esc_attr( $product_id ) . '" />';
         echo '<input type="hidden" name="display_price" class="display_price" value="' . esc_attr( wc_get_price_to_display( $product ) ) . '" />';
         echo '<input type="hidden" name="quantity" class="quantity" value="1" />';
-		echo '<input type="hidden" name="tax_included" class="tax_included" value="' . esc_attr( true ) . '" />';
+        echo '<input type="hidden" name="tax_included" class="tax_included" value="' . esc_attr( true ) . '" />';
         echo '<input type="hidden" name="title" class="title" value="' . esc_attr( $product->get_title() ) . '" />';
-		echo '<input type="hidden" name="desc" class="desc" value="" />';
+        echo '<input type="hidden" name="desc" class="desc" value="" />';
 
         echo '</span>';
         echo '</div>';
@@ -1892,3 +1894,8 @@ add_action( 'woocommerce_add_to_cart_validation', 'thps_validate_captcha', 11, 2
 	</div>
 	<?php
 }*/
+
+add_action('after_setup_theme', 'thps_add_image_sizes');
+function thps_add_image_sizes() {
+    add_image_size('shop_mignon', 90, 90, true);
+}
