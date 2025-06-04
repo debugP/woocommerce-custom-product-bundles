@@ -31,7 +31,7 @@ add_filter(
   
 add_action('wp_enqueue_scripts', 'thps_woo_custom_product_bundles_enqueue_scripts');
 function thps_woo_custom_product_bundles_enqueue_scripts() {
-	wp_register_style ('thps-woo-custom-product-bundles-style', plugins_url( '/assets/css/thps-woo-custom-product-bundle13.css', __FILE__ ));
+	wp_register_style ('thps-woo-custom-product-bundles-style', plugins_url( '/assets/css/thps-woo-custom-product-bundle14.css', __FILE__ ));
 	wp_register_script('thps-woo-custom-product-bundles-script', plugins_url( '/assets/js/thps-woo-custom-product-bundle1.js', __FILE__ ), array('jquery'));
 //	wp_register_script('google-recaptcha', "https://www.google.com/recaptcha/api.js");
 }
@@ -802,7 +802,7 @@ function thps_display_products_grid( $product_kit_id, $products, $max_cols, $ind
         echo '</a>';
 
         echo '<span class="price product-price">' . wp_kses_post( $product->get_price_html() ) . '</span>';
-        echo '<span style="margin-left:5px;">';
+        echo '<span>';
         echo '<input type="checkbox" name="price_' . esc_attr( $product_id ) . '" value="' . esc_attr( $product->get_price() ) . '" class="item-price" onclick="selectBundleItem(this,\'' . esc_js( $product_kit_id ) . '\')"' . $checked . ' />';
         
         // Ensure all required hidden inputs are present with correct names and classes
