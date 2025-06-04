@@ -1,0 +1,98 @@
+/* Combined fixes for text alignment, image size in mobile view, and grid layout */
+
+/* Fixes for perfume name alignment */
+.ingredient-category .product-label,
+.ingredient-category .product-label a,
+table.ingredient-category span.product-label a,
+.ingredient-category td div,
+.ingredient-category td div a {
+    text-align: left !important;
+    display: block !important;
+    width: 100% !important;
+    white-space: normal !important;
+    font-size: 16px !important;
+    color: #222 !important;
+    line-height: 1.4 !important;
+    padding: 5px 0 !important;
+}
+
+.ingredient-category .product-label a:hover,
+table.ingredient-category span.product-label a:hover,
+.ingredient-category td div a:hover {
+    text-decoration: underline !important;
+    color: #a81010 !important;
+}
+
+/* Ensure proper spacing between checkbox and text */
+.ingredient-category input[type="checkbox"] {
+    margin-right: 10px !important;
+    vertical-align: middle !important;
+}
+
+/* Ensure proper alignment in table cells */
+.ingredient-category td {
+    vertical-align: middle !important;
+    padding: 8px !important;
+    text-align: left !important;
+}
+
+/* Override any inline styles */
+.ingredient-category td[style*="text-align"],
+.ingredient-category td div[style*="text-align"],
+.ingredient-category td div a[style*="text-align"] {
+    text-align: left !important;
+}
+
+/* Fixes for image size and grid layout in mobile view */
+@media only screen and (max-width: 767px) {
+    /* Ensure images are 40x40px */
+    .thps_shop_columns .thumbnail_container img.attachment-bundle_thumbnail {
+        width: 40px !important;
+        height: 40px !important;
+        object-fit: cover !important; /* Ensure image covers the area without distortion */
+    }
+    /* Adjust grid items for 2 columns on mobile */
+    .shop_columns_6.thps_shop_columns ul.products.thps-products li.product {
+        width: 48% !important; /* Adjust width for two columns with some spacing */
+        margin: 1% !important; /* Add some margin between items */
+        float: left !important; /* Ensure items float left for grid layout */
+        clear: none !important; /* Prevent clearing */
+    }
+    .shop_columns_6.thps_shop_columns ul.products.thps-products li.product.first {
+        margin-left: 0 !important;
+    }
+     .shop_columns_6.thps_shop_columns ul.products.thps-products li.product.last {
+        margin-right: 0 !important;
+    }
+    /* Ensure the container for image and text within the grid item is correctly sized */
+    .thps_shop_columns .inner_product .thumbnail_container {
+         width: 40px !important;
+         height: 40px !important;
+         overflow: hidden !important;
+         display: block !important; /* Changed from inline-block to block */
+         margin: 0 auto 10px auto !important; /* Center the container and add margin below */
+    }
+    /* Adjust alignment for the product name and price below the image */
+    .thps_shop_columns .inner_product_header {
+        text-align: center !important;
+    }
+     .thps_shop_columns .inner_product_header h3.product-name {
+         font-size: 14px !important; /* Adjust font size for mobile */
+     }
+      .thps_shop_columns .inner_product_header .price {
+         font-size: 14px !important; /* Adjust font size for mobile */
+      }
+       .thps_shop_columns .inner_product_header span.amount {
+         font-size: 14px !important; /* Adjust font size for mobile */
+      }
+    /* Adjust spacing for the checkbox */
+     .thps_shop_columns .inner_product_header span[style*="margin-left"] {
+         margin-left: 0 !important; /* Remove margin-left if present */
+         display: block !important; /* Make it a block element */
+         text-align: center !important; /* Center the checkbox */
+         margin-top: 5px !important; /* Add some margin above */
+     }
+     .thps_shop_columns .inner_product_header input[type="checkbox"] {
+         vertical-align: middle !important; /* Ensure vertical alignment */
+     }
+} 

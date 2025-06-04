@@ -31,7 +31,7 @@ add_filter(
   
 add_action('wp_enqueue_scripts', 'thps_woo_custom_product_bundles_enqueue_scripts');
 function thps_woo_custom_product_bundles_enqueue_scripts() {
-	wp_register_style ('thps-woo-custom-product-bundles-style', plugins_url( '/assets/css/thps-woo-custom-product-bundle4.css', __FILE__ ));
+	wp_register_style ('thps-woo-custom-product-bundles-style', plugins_url( '/assets/css/thps-woo-custom-product-bundle5.css', __FILE__ ));
 	wp_register_script('thps-woo-custom-product-bundles-script', plugins_url( '/assets/js/thps-woo-custom-product-bundle.js', __FILE__ ), array('jquery'));
 //	wp_register_script('google-recaptcha', "https://www.google.com/recaptcha/api.js");
 }
@@ -768,13 +768,12 @@ function thps_display_products_grid( $product_kit_id, $products, $max_cols, $ind
 
     while ( $products->have_posts() ) {
         $products->the_post();
-        global $product, $post; // Make $post available for getting original title
+        global $product, $post;
 
         $col_index = $index == 0 ? 0 : $index % $max_cols;
         $product_class = ($col_index == 0) ? 'first' : (($col_index == ($max_cols - 1)) ? 'last' : '');
         $index = $index + 1;
 
-        // Use $post->ID for product ID as in original commented code for consistency with JS
         $product_id = $post->ID;
         $link = get_permalink($product_id);
         $checked = isset($_POST['price_' . $product_id]) ? 'checked="checked"' : '';
@@ -784,10 +783,9 @@ function thps_display_products_grid( $product_kit_id, $products, $max_cols, $ind
         echo '<a href="' . esc_url( $link ) . '" target="_blank">\n';
         echo '<div class="thumbnail_container">\n';
         
-        // Use get_the_post_thumbnail with attributes for consistency
         $thumbnail_attr = array(
             'class'	=> "attachment-bundle_thumbnail wp-post-image",
-            'alt'	=> trim( strip_tags( $post->post_title ) ) // Use original post title for alt
+            'alt'	=> trim( strip_tags( $post->post_title ) )
         );
         echo get_the_post_thumbnail( $product_id, 'shop_thumbnail', $thumbnail_attr );
 
@@ -796,20 +794,17 @@ function thps_display_products_grid( $product_kit_id, $products, $max_cols, $ind
 
         echo '<div class="inner_product_header">\n';
         echo '<a href="' . esc_url( $link ) . '" target="_blank">\n';
-        // Use get_the_title() for product name as it's the standard way
         echo '<h3 class="product-name">' . esc_html( $product->get_title() ) . '</h3>\n';
         echo '</a>\n';
 
         echo '<span class="price product-price">' . wp_kses_post( $product->get_price_html() ) . '</span>\n';
         echo '<span style="margin-left:5px;">\n';
-        // Checkbox with item-price class for JS
-        echo '<input type="checkbox" name="price_' . esc_attr( $product_id ) . '" value="' . esc_attr( $product->get_price() ) . '" class="item-price" onclick="selectBundleItem(this,\'' . esc_js( $product_kit_id ) . '\')"' . $checked . ' />\n';
+        echo '<input type="checkbox" name="price_' . esc_attr( $product_id ) . '" value="' . esc_attr( $product->get_price() ) . '" class="item-price"
+        onclick="selectBundleItem(this,\'' . esc_js( $product_kit_id ) . '\')"' . $checked . ' />\n';
         
-        // Hidden inputs with classes for JS calculation
         echo '<input type="hidden" name="product_id" class="product_id" value="' . esc_attr( $product_id ) . '" />\n';
-        // Use wc_get_price_to_display for display price consistency
         echo '<input type="hidden" name="display_price" class="display_price" value="' . esc_attr( wc_get_price_to_display( $product ) ) . '" />\n';
-        echo '<input type="hidden" name="quantity" class="quantity" value="1" />\n'; // Assuming quantity is always 1
+        echo '<input type="hidden" name="quantity" class="quantity" value="1" />\n';
         echo '<input type="hidden" name="tax_included" class="tax_included" value="' . esc_attr( true ) . '" />\n';
         echo '<input type="hidden" name="title" class="title" value="' . esc_attr( $product->get_title() ) . '" />\n';
         echo '<input type="hidden" name="desc" class="desc" value="" />\n';
