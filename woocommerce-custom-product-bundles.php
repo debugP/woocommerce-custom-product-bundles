@@ -31,7 +31,7 @@ add_filter(
   
 add_action('wp_enqueue_scripts', 'thps_woo_custom_product_bundles_enqueue_scripts');
 function thps_woo_custom_product_bundles_enqueue_scripts() {
-	wp_register_style ('thps-woo-custom-product-bundles-style', plugins_url( '/assets/css/thps-woo-custom-product-bundle5.css', __FILE__ ));
+	wp_register_style ('thps-woo-custom-product-bundles-style', plugins_url( '/assets/css/thps-woo-custom-product-bundle7.css', __FILE__ ));
 	wp_register_script('thps-woo-custom-product-bundles-script', plugins_url( '/assets/js/thps-woo-custom-product-bundle.js', __FILE__ ), array('jquery'));
 //	wp_register_script('google-recaptcha', "https://www.google.com/recaptcha/api.js");
 }
@@ -778,10 +778,10 @@ function thps_display_products_grid( $product_kit_id, $products, $max_cols, $ind
         $link = get_permalink($product_id);
         $checked = isset($_POST['price_' . $product_id]) ? 'checked="checked"' : '';
 
-        echo '<li id="li_KitMignon" class="product type-product ' . esc_attr( $product_class ) . '">\n';
-        echo '<div class="inner_product main_color wrapped_style noLightbox av-product-class-">\n';
-        echo '<a href="' . esc_url( $link ) . '" target="_blank">\n';
-        echo '<div class="thumbnail_container">\n';
+        echo '<li id="li_KitMignon" class="product type-product ' . esc_attr( $product_class ) . '">';
+        echo '<div class="inner_product main_color wrapped_style noLightbox av-product-class-">';
+        echo '<a href="' . esc_url( $link ) . '" target="_blank">';
+        echo '<div class="thumbnail_container">';
         
         $thumbnail_attr = array(
             'class'	=> "attachment-bundle_thumbnail wp-post-image",
@@ -789,35 +789,35 @@ function thps_display_products_grid( $product_kit_id, $products, $max_cols, $ind
         );
         echo get_the_post_thumbnail( $product_id, 'shop_thumbnail', $thumbnail_attr );
 
-        echo '</div>\n';
-        echo '</a>\n';
+        echo '</div>';
+        echo '</a>';
 
-        echo '<div class="inner_product_header">\n';
-        echo '<a href="' . esc_url( $link ) . '" target="_blank">\n';
-        echo '<h3 class="product-name">' . esc_html( $product->get_title() ) . '</h3>\n';
-        echo '</a>\n';
+        echo '<div class="inner_product_header">';
+        echo '<a href="' . esc_url( $link ) . '" target="_blank">';
+        echo '<h3 class="product-name">' . esc_html( $product->get_title() ) . '</h3>';
+        echo '</a>';
 
-        echo '<span class="price product-price">' . wp_kses_post( $product->get_price_html() ) . '</span>\n';
-        echo '<span style="margin-left:5px;">\n';
+        echo '<span class="price product-price">' . wp_kses_post( $product->get_price_html() ) . '</span>';
+        echo '<span style="margin-left:5px;">';
         echo '<input type="checkbox" name="price_' . esc_attr( $product_id ) . '" value="' . esc_attr( $product->get_price() ) . '" class="item-price"
-        onclick="selectBundleItem(this,\'' . esc_js( $product_kit_id ) . '\')"' . $checked . ' />\n';
+        onclick="selectBundleItem(this,\'' . esc_js( $product_kit_id ) . '\')"' . $checked . ' />';
         
-        echo '<input type="hidden" name="product_id" class="product_id" value="' . esc_attr( $product_id ) . '" />\n';
-        echo '<input type="hidden" name="display_price" class="display_price" value="' . esc_attr( wc_get_price_to_display( $product ) ) . '" />\n';
-        echo '<input type="hidden" name="quantity" class="quantity" value="1" />\n';
-        echo '<input type="hidden" name="tax_included" class="tax_included" value="' . esc_attr( true ) . '" />\n';
-        echo '<input type="hidden" name="title" class="title" value="' . esc_attr( $product->get_title() ) . '" />\n';
-        echo '<input type="hidden" name="desc" class="desc" value="" />\n';
+        echo '<input type="hidden" name="product_id" class="product_id" value="' . esc_attr( $product_id ) . '" />';
+        echo '<input type="hidden" name="display_price" class="display_price" value="' . esc_attr( wc_get_price_to_display( $product ) ) . '" />';
+        echo '<input type="hidden" name="quantity" class="quantity" value="1" />';
+        echo '<input type="hidden" name="tax_included" class="tax_included" value="' . esc_attr( true ) . '" />';
+        echo '<input type="hidden" name="title" class="title" value="' . esc_attr( $product->get_title() ) . '" />
+		<input type="hidden" name="desc" class="desc" value="" />';
 
-        echo '</span>\n';
-        echo '</div>\n';
-        echo '</div>\n';
-        echo '</li>\n';
+        echo '</span>';
+        echo '</div>';
+        echo '</div>';
+        echo '</li>';
     }
     wp_reset_postdata();
 
-    echo '</ul>\n';
-    echo '</div>\n';
+    echo '</ul>';
+    echo '</div>';
 }
 
 
