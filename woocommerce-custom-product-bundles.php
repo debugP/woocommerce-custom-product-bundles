@@ -31,8 +31,8 @@ add_filter(
   
 add_action('wp_enqueue_scripts', 'thps_woo_custom_product_bundles_enqueue_scripts');
 function thps_woo_custom_product_bundles_enqueue_scripts() {
-	wp_enqueue_style('thps-woo-custom-product-bundle-style', plugins_url('assets/css/thps-woo-custom-product-bundle25.css', __FILE__), array(), '1.0.0');
-	wp_enqueue_script('thps-woo-custom-product-bundles-script', plugins_url('assets/js/thps-woo-custom-product-bundle19.js', __FILE__), array('jquery', 'jquery-ui-dialog', 'wc-add-to-cart'), '1.0.0', true);
+	wp_enqueue_style('thps-woo-custom-product-bundle-style', plugins_url('assets/css/thps-woo-custom-product-bundle27.css', __FILE__), array(), '1.0.0');
+	wp_enqueue_script('thps-woo-custom-product-bundles-script', plugins_url('assets/js/thps-woo-custom-product-bundle20.js', __FILE__), array('jquery', 'jquery-ui-dialog', 'wc-add-to-cart'), '1.0.0', true);
 //	wp_register_script('google-recaptcha', "https://www.google.com/recaptcha/api.js");
 }
 
@@ -911,7 +911,7 @@ function thps_display_products_list(
 
     if ( $title ) {
         echo '<thead><tr>';
-        echo '<th style="width:40px;"></th>'; // Colonna vuota per l'immagine
+        echo '<th style="width:40px;padding-left:3px;padding-right:3px;"></th>'; // Colonna vuota per l'immagine
         echo '<th style="text-align:left;white-space:nowrap;">' . esc_html( __( $title, 'woocommerce' ) ) . '</th>';
         if ( $show_price ) {
             echo '<th style="text-align:right;width:100px;white-space:nowrap;">' . get_woocommerce_currency_symbol() . '</th>';
@@ -949,7 +949,7 @@ function thps_display_products_list(
         echo '</td>';
 
         // Colonna Nome Prodotto
-        echo '<td style="vertical-align:middle;text-align:left;padding:8px;">';
+        echo '<td style="vertical-align:middle;text-align:left;padding:4px;">';
         $prod_name = $product->get_title();
         if ( $show_price_in_name ) {
             $prod_name .= ' (+ ' . $product->get_price_html() . ')';
@@ -961,7 +961,7 @@ function thps_display_products_list(
 
         // Colonna Prezzo
         if ( $show_price ) {
-            echo '<td style="vertical-align:middle;text-align:right !important;padding:8px;white-space:nowrap;">';
+            echo '<td style="vertical-align:middle;text-align:right !important;padding:4px;white-space:nowrap;">';
             // Modifica qui per assicurare che il prezzo sia su una riga
             $price_html = $product->get_price_html();
             // Rimuovi eventuali spazi extra e assicura che il simbolo della valuta e il prezzo siano sulla stessa riga
