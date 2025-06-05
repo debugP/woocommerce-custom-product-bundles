@@ -31,7 +31,7 @@ add_filter(
   
 add_action('wp_enqueue_scripts', 'thps_woo_custom_product_bundles_enqueue_scripts');
 function thps_woo_custom_product_bundles_enqueue_scripts() {
-	wp_enqueue_style('thps-woo-custom-product-bundle-style', plugins_url('assets/css/thps-woo-custom-product-bundle23.css', __FILE__), array(), '1.0.0');
+	wp_enqueue_style('thps-woo-custom-product-bundle-style', plugins_url('assets/css/thps-woo-custom-product-bundle24.css', __FILE__), array(), '1.0.0');
 	wp_enqueue_script('thps-woo-custom-product-bundles-script', plugins_url('assets/js/thps-woo-custom-product-bundle19.js', __FILE__), array('jquery', 'jquery-ui-dialog', 'wc-add-to-cart'), '1.0.0', true);
 //	wp_register_script('google-recaptcha', "https://www.google.com/recaptcha/api.js");
 }
@@ -916,7 +916,7 @@ function thps_display_products_list(
         if ( $show_price ) {
             echo '<th style="text-align:right;width:100px;white-space:nowrap;">' . get_woocommerce_currency_symbol() . '</th>';
         }
-        echo '<th style="width:50px;text-align:center;white-space:nowrap;">' . esc_html__('Select', 'woocommerce-custom-product-bundles') . '</th>';
+        echo '<th style="width:25px;white-space:nowrap;">' . esc_html__('', 'woocommerce-custom-product-bundles') . '</th>';
         echo '</tr></thead>';
     }
 
@@ -941,7 +941,7 @@ function thps_display_products_list(
             $thumbnail_attr = array(
                 'class' => 'attachment-kit_mignon wp-post-image',
                 'alt' => esc_attr($product->get_title()),
-                'style' => 'width:40px;height:40px;object-fit:cover;'
+                'style' => 'min-width:40px;width:40px;height:40px;object-fit:cover;'
             );
             echo get_the_post_thumbnail($product_id, 'kit_mignon', $thumbnail_attr);
             echo '</div>';
@@ -961,7 +961,7 @@ function thps_display_products_list(
 
         // Colonna Prezzo
         if ( $show_price ) {
-            echo '<td style="vertical-align:middle;text-align:right;padding:8px;white-space:nowrap;">';
+            echo '<td style="vertical-align:middle;text-align:right !important;padding:8px;white-space:nowrap;">';
             // Modifica qui per assicurare che il prezzo sia su una riga
             $price_html = $product->get_price_html();
             // Rimuovi eventuali spazi extra e assicura che il simbolo della valuta e il prezzo siano sulla stessa riga
@@ -971,7 +971,7 @@ function thps_display_products_list(
         }
 
         // Colonna Checkbox
-        echo '<td style="vertical-align:middle;text-align:center;width:50px;">';
+        echo '<td style="vertical-align:middle;text-align:center !important;width:25px;">';
         echo '<input type="checkbox" name="price_' . esc_attr( $product_id ) . '" class="item-price ' . esc_attr( $ex_class ) . '" value="' . esc_attr( $price ) . '" onclick="selectBundleItem(this,\'' . esc_js( $product_kit_id ) . '\')" ' . $checked . '/>';
         // Aggiungiamo gli input hidden necessari per il calcolo del totale
         echo '<input type="hidden" name="product_id" value="' . esc_attr( $product_id ) . '"/>';
