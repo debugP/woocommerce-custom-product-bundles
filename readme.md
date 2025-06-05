@@ -8,10 +8,11 @@ A WordPress plugin that extends WooCommerce functionality to create customizable
 - Create custom perfume bundles with multiple fragrance selections
 - Build personalized perfume therapy kits
 - Select products from categorized lists
-- Set minimum and maximum product quantities
+- Set minimum and maximum product quantities (validation improved)
 - Complete questionnaires for personalized perfume creation
 - Multi-currency support
-- Responsive design for all devices
+- Responsive design for all devices (including mobile grid layout fixes)
+- Accurate total price calculation based on selected items
 
 ### For Developers
 - Extensible shortcode system
@@ -21,6 +22,10 @@ A WordPress plugin that extends WooCommerce functionality to create customizable
 - Support for product variations
 - Multi-language support
 - Aelia Currency Switcher integration
+- Refined JavaScript logic for bundle total and item collection
+- Improved handling of CSS and JavaScript files with versioning for cache busting
+- Enhanced HTML structure in PHP templates for better JavaScript integration
+- Registration and usage of `shop_mignon` image size for consistent product images
 
 ## Installation
 
@@ -112,9 +117,9 @@ A WordPress plugin that extends WooCommerce functionality to create customizable
 woocommerce-custom-product-bundles/
 ├── assets/
 │   ├── css/
-│   │   └── thps-woo-custom-product-bundle.css
+│   │   └── thps-woo-custom-product-bundleXX.css (where XX is the current version number)
 │   └── js/
-│       └── thps-woo-custom-product-bundle.js
+│       └── thps-woo-custom-product-bundleYY.js (where YY is the current version number)
 ├── languages/
 ├── woocommerce-custom-product-bundles.php
 └── README.md
@@ -124,19 +129,19 @@ woocommerce-custom-product-bundles/
 
 #### Bundle Management
 - `thps_add_cart_item_data()` - Handles bundle data in cart
-- `thps_woocommerce_add_to_cart()` - Processes bundle addition to cart
-- `thps_get_cart_item_from_session()` - Retrieves bundle data from session
+- `thps_woocommerce_add_to_cart()` - Processes bundle addition to cart, including saving bundle items and total to session and sending questionnaire email.
+- `thps_get_cart_item_from_session()` - Retrieves bundle data from session and updates cart item price and name.
 
 #### Product Display
-- `thps_display_products_grid()` - Renders product grid
-- `thps_display_products_list()` - Renders product list
+- `thps_display_products_grid()` - Renders product grid with corrected HTML structure and data attributes for JS, using `shop_mignon` image size.
+- `thps_display_products_list()` - Renders product list with corrected HTML structure and data attributes for JS, using `kit_mignon` image size and improved alignment.
 - `thps_display_products_as_select_list()` - Renders selectable product list
 
 #### Session Management
-- `set_bundle_items_in_session()` - Stores bundle items
-- `get_bundle_items_from_session()` - Retrieves bundle items
+- `set_bundle_items_in_session()` - Stores bundle items (JSON string)
+- `get_bundle_items_from_session()` - Retrieves bundle items (JSON string) from session.
 - `set_bundle_total_in_session()` - Stores bundle total
-- `get_bundle_total_from_session()` - Retrieves bundle total
+- `get_bundle_total_from_session()` - Retrieves bundle total from session.
 
 ### Hooks and Filters
 
@@ -159,9 +164,9 @@ woocommerce-custom-product-bundles/
 
 ## Known Issues
 
-- Some WooCommerce deprecated functions are used (to be updated)
-- Session management could be optimized
-- Security functions need improvement
+- Potential conflicts with other themes or plugins that heavily modify WooCommerce checkout or form submission behavior.
+- Session management could be optimized (original note retained).
+- Security functions need improvement (original note retained).
 
 ## Contributing
 
