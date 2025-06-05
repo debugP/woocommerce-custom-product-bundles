@@ -181,32 +181,106 @@ table.ingredient-category span.product-label a:hover,
     }
 }
 
-/* Styles for the modal box */
+/* --- jQuery UI Dialog Styles for Centering and Appearance --- */
+
+/* Style for the dialog overlay (the dimming background) */
+.ui-widget-overlay {
+    background: rgba(0, 0, 0, 0.5) !important; /* Semi-transparent grey */
+    opacity: 1 !important; /* Ensure opacity is applied */
+    z-index: 999 !important; /* Ensure it's below the dialog but above other content */
+}
+
+/* Style for the dialog container */
+.ui-dialog {
+    padding: 0 !important; /* Remove default padding */
+    outline: 0 !important; /* Remove outline */
+    position: fixed !important; /* Ensure fixed positioning */
+    top: 50% !important; /* Center vertically */
+    left: 50% !important; /* Center horizontally */
+    transform: translate(-50%, -50%) !important; /* Adjust for exact centering */
+    z-index: 1000 !important; /* Ensure it's on top */
+    background: #fff !important; /* White background for the dialog */
+    border: 1px solid #ccc !important; /* Add a subtle border */
+    box-shadow: 0 5px 15px rgba(0,0,0,.5) !important; /* Add a shadow */
+}
+
+/* Style for the dialog title bar */
+.ui-dialog .ui-dialog-titlebar {
+    padding: .4em 1em !important;
+    position: relative !important;
+    border: 0 !important; /* Remove border */
+    background: #f0f0f0 !important; /* Light grey background */
+    color: #333 !important; /* Darker text color */
+    font-weight: bold !important;
+    font-size: 1em !important;
+}
+
+/* Style for the dialog title */
+.ui-dialog .ui-dialog-title {
+    float: left !important;
+    margin: .1em 16px .1em 0 !important;
+    color: #333 !important;
+}
+
+/* Style for the close button */
+.ui-dialog .ui-dialog-titlebar-close {
+    position: absolute !important;
+    right: .3em !important;
+    top: 50% !important;
+    width: 21px !important;
+    height: 21px !important;
+    margin: -10px 0 0 0 !important;
+    padding: 1px !important;
+    cursor: pointer !important;
+}
+
+/* Style for the close button icon */
+.ui-dialog .ui-dialog-titlebar-close span {
+    display: block !important;
+    margin: 1px !important;
+}
+
+/* Style for the dialog content area */
+.ui-dialog .ui-dialog-content {
+    position: relative !important;
+    border: 0 !important;
+    padding: 1em !important; /* Adjust padding as needed */
+    background: none !important; /* Remove background */
+    color: #333 !important; /* Text color */
+    overflow: auto !important; /* Handle overflow */
+    zoom: 1 !important;
+}
+
+/* Style for the dialog button pane */
+.ui-dialog .ui-dialog-buttonpane {
+    text-align: right !important;
+    border-width: 1px 0 0 0 !important; /* Top border */
+    background-image: none !important;
+    margin-top: .5em !important;
+    padding: .3em 1em .5em .4em !important;
+}
+
+/* Style for the buttons within the button pane */
+.ui-dialog .ui-dialog-buttonpane .ui-dialog-buttonset {
+    float: right !important;
+}
+
+/* Style for individual buttons */
+.ui-dialog .ui-dialog-buttonpane button {
+    margin: .5em .4em .5em 0 !important;
+    cursor: pointer !important;
+}
+
+/* Ensure the #dialog-box element itself doesn't have conflicting styles if it's still being targeted */
 #dialog-box {
-    display: none; /* Hidden by default */
-    position: fixed; /* Stay in place */
-    z-index: 1000; /* Sit on top */
-    left: 50%;
-    top: 50%;
-    transform: translate(-50%, -50%); /* Center vertically and horizontally */
-    width: 80%; /* Or specify a pixel width */
-    max-width: 500px; /* Maximum width */
-    background-color: #fff; /* White background */
-    padding: 20px; /* Some padding */
-    border: 1px solid #888; /* A border */
-    box-shadow: 0 4px 8px 0 rgba(0,0,0,0.2), 0 6px 20px 0 rgba(0,0,0,0.19); /* Some shadow */
-    text-align: center; /* Center text inside */
-    color: #333; /* Text color */
-}
-
-.shop_columns_3.thps_shop_columns {
-    display: table;
-}
-
-/* Style for the message inside the modal */
-#dialog-box-msg {
-    margin: 0;
-    padding: 0;
-    font-size: 1.1em;
-    line-height: 1.5;
+    /* Reset or adjust any styles that might interfere with jQuery UI positioning */
+    position: static !important; /* Let jQuery UI control positioning */
+    top: auto !important;
+    left: auto !important;
+    transform: none !important;
+    /* Keep basic appearance styles if needed, but jQuery UI content area styles might be sufficient */
+    background-color: transparent !important; /* Ensure no conflicting background */
+    border: 0 !important; /* Ensure no conflicting border */
+    box-shadow: none !important; /* Ensure no conflicting shadow */
+    padding: 0 !important; /* Ensure no conflicting padding */
 } 
