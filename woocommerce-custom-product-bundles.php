@@ -32,7 +32,7 @@ add_filter(
 add_action('wp_enqueue_scripts', 'thps_woo_custom_product_bundles_enqueue_scripts');
 function thps_woo_custom_product_bundles_enqueue_scripts() {
 	wp_enqueue_style('thps-woo-custom-product-bundle-style', plugins_url('assets/css/thps-woo-custom-product-bundle23.css', __FILE__), array(), '1.0.0');
-	wp_enqueue_script('thps-woo-custom-product-bundles-script', plugins_url('assets/js/thps-woo-custom-product-bundle17.js', __FILE__), array('jquery', 'jquery-ui-dialog', 'wc-add-to-cart'), '1.0.0', true);
+	wp_enqueue_script('thps-woo-custom-product-bundles-script', plugins_url('assets/js/thps-woo-custom-product-bundle19.js', __FILE__), array('jquery', 'jquery-ui-dialog', 'wc-add-to-cart'), '1.0.0', true);
 //	wp_register_script('google-recaptcha', "https://www.google.com/recaptcha/api.js");
 }
 
@@ -1438,7 +1438,7 @@ function thps_woocommerce_add_to_cart( $cart_item_key, $product_id, $quantity, $
         set_bundle_total_in_session($cart_item_key, $bundle_total);
         set_bundle_name_in_session($cart_item_key, $bundle_name);
         set_bundle_name_in_session_for_msg($product_id, $bundle_name);
-        $cart_item_data = $bundle_items_frmtd;
+ //       $cart_item_data = $bundle_items_frmtd;
 
         $has_questionnaire = isset($_REQUEST['has_questionnaire']) ? sanitize_text_field($_REQUEST['has_questionnaire']) : '';
         if($has_questionnaire === "true" || $has_questionnaire === true){
