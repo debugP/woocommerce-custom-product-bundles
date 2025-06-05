@@ -1,0 +1,285 @@
+/* Combined fixes for text alignment, grid layout, centering, border, and product name style */
+
+/* Fixes for perfume name alignment */
+.ingredient-category .product-label,
+.ingredient-category .product-label a,
+table.ingredient-category span.product-label a,
+.ingredient-category td div,
+.ingredient-category td div a {
+    text-align: left !important;
+    display: block !important;
+    width: 100% !important;
+    white-space: normal !important;
+    font-size: 16px !important;
+    color: #222 !important;
+    line-height: 1.4 !important;
+    padding: 5px 0 !important;
+}
+
+.ingredient-category .product-label a:hover,
+table.ingredient-category span.product-label a:hover,
+.ingredient-category td div a:hover {
+    text-decoration: underline !important;
+    color: #a81010 !important;
+}
+
+/* Ensure proper spacing between checkbox and text */
+.ingredient-category input[type="checkbox"] {
+    margin-right: 10px !important;
+    vertical-align: middle !important;
+}
+
+/* Ensure proper alignment in table cells */
+.ingredient-category td {
+    vertical-align: middle !important;
+    padding: 8px !important;
+    text-align: left !important;
+}
+
+/* Override any inline styles */
+.ingredient-category td[style*="text-align"],
+.ingredient-category td div[style*="text-align"],
+.ingredient-category td div a[style*="text-align"] {
+    text-align: left !important;
+}
+
+/* Grid layout for 6 columns */
+.shop_columns_6.thps_shop_columns ul.products.thps-products {
+    display: flex !important;
+    flex-wrap: wrap !important;
+    margin: 0 -10px !important;
+    padding: 0 !important;
+    list-style: none !important;
+}
+
+.shop_columns_6.thps_shop_columns ul.products.thps-products li.product {
+    width: calc(16.666% - 20px) !important; /* 100% / 6 columns - margin */
+    min-width: 90px !important; /* Ensure minimum size */
+    margin: 10px !important; /* Spacing between items */
+    float: none !important; /* Remove floats */
+    clear: none !important; /* Remove clears */
+    box-sizing: border-box; /* Include padding and border in element's total width and height */
+}
+
+/* Transparent border for grid cell */
+.shop_columns_6.thps_shop_columns ul.products.thps-products li.product .inner_product {
+    border: 0 !important;
+    box-shadow: none !important;
+    background-color: transparent !important;
+}
+
+.shop_columns_6.thps_shop_columns ul.products.thps-products li.product .thumbnail_container {
+    width: 90px !important;
+    height: 90px !important;
+    overflow: hidden !important;
+    display: block !important;
+    margin: 0 auto 10px auto !important;
+}
+
+.shop_columns_6.thps_shop_columns ul.products.thps-products li.product .thumbnail_container img {
+    width: 90px !important;
+    height: 90px !important;
+    object-fit: cover !important;
+}
+
+/* Center price and checkbox in grid view */
+.thps_shop_columns .inner_product_header {
+    text-align: center !important;
+    border-top-width: 0 !important; /* Remove top border */
+}
+
+/* Override WooCommerce default styles for inner_product_header */
+#top .inner_product_header {
+    border-top-width: 0 !important;
+}
+
+/* Product name style in grid view */
+.thps_shop_columns .inner_product_header h3.product-name {
+    font-weight: 700 !important; /* Grassetto */
+    color: #555 !important; /* Colore richiesto */
+    font-size: 16px !important;
+    margin-bottom: 5px !important;
+}
+
+.thps_shop_columns .inner_product_header span.price,
+.thps_shop_columns .inner_product_header span {
+    display: inline-block !important;
+    vertical-align: middle !important;
+}
+
+.thps_shop_columns .inner_product_header span.price {
+    margin-right: 10px !important;
+}
+
+/* Fixes for grid layout in mobile view (2 columns) */
+@media only screen and (max-width: 767px) {
+    .shop_columns_6.thps_shop_columns ul.products.thps-products li.product {
+        width: calc(50% - 20px) !important;
+        min-width: 90px !important;
+        margin: 10px !important;
+    }
+    /* The rule below seems specific to a theme/template and might not be needed if the above flexbox rules are sufficient */
+    /*
+    .responsive #top #main li#li_KitMignon {
+        width: 42% !important;
+        float: left;
+    }
+    */
+    
+    .shop_columns_6.thps_shop_columns ul.products.thps-products li.product.first {
+        margin-left: 10px !important;
+    }
+    
+    .shop_columns_6.thps_shop_columns ul.products.thps-products li.product.last {
+        margin-right: 10px !important;
+    }
+    
+    .thps_shop_columns .inner_product .thumbnail_container {
+        width: 90px !important;
+        height: 90px !important;
+        margin: 0 auto 10px auto !important;
+    }
+    
+    .thps_shop_columns .inner_product .thumbnail_container img {
+        width: 90px !important;
+        height: 90px !important;
+    }
+    
+    .thps_shop_columns .inner_product_header {
+        text-align: center !important;
+        border-top-width: 0 !important; /* Remove top border in mobile too */
+    }
+    
+    .thps_shop_columns .inner_product_header h3.product-name {
+        font-size: 14px !important;
+        font-weight: 700 !important;
+        color: #555 !important;
+        margin-bottom: 5px !important;
+    }
+    
+    .thps_shop_columns .inner_product_header .price,
+    .thps_shop_columns .inner_product_header span.amount {
+        font-size: 14px !important;
+    }
+    
+    .thps_shop_columns .inner_product_header span[style*="margin-left"] {
+        margin-left: 0 !important;
+        display: block !important;
+        text-align: center !important;
+        margin-top: 5px !important;
+    }
+    
+    .thps_shop_columns .inner_product_header input[type="checkbox"] {
+        vertical-align: middle !important;
+    }
+}
+
+/* --- jQuery UI Dialog Styles for Centering and Appearance --- */
+
+/* Style for the dialog overlay (the dimming background) */
+.ui-widget-overlay {
+    background: rgba(0, 0, 0, 0.5) !important; /* Semi-transparent grey */
+    opacity: 1 !important;
+    z-index: 999 !important;
+    position: fixed !important;
+    top: 0 !important;
+    left: 0 !important;
+    width: 100% !important;
+    height: 100% !important;
+}
+
+/* Style for the dialog container */
+.ui-dialog {
+    padding: 0 !important;
+    outline: 0 !important;
+    position: fixed !important; /* Ensure fixed positioning */
+    top: 50% !important; /* Center vertically */
+    left: 50% !important; /* Center horizontally */
+    transform: translate(-50%, -50%) !important; /* Adjust for exact centering */
+    z-index: 1000 !important;
+    background: #fff !important; /* White background */
+    border: 1px solid #ccc !important;
+    box-shadow: 0 5px 15px rgba(0,0,0,.5) !important;
+    margin: 0 !important; /* Remove any margin that might affect centering */
+}
+
+/* Style for the dialog title bar */
+.ui-dialog .ui-dialog-titlebar {
+    padding: .4em 1em !important;
+    position: relative !important;
+    border: 0 !important;
+    background: #f0f0f0 !important; /* Light grey background */
+    color: #333 !important;
+    font-weight: bold !important;
+    font-size: 1em !important;
+}
+
+/* Style for the dialog title */
+.ui-dialog .ui-dialog-title {
+    float: left !important;
+    margin: .1em 16px .1em 0 !important;
+    color: #333 !important;
+}
+
+/* Style for the close button */
+.ui-dialog .ui-dialog-titlebar-close {
+    position: absolute !important;
+    right: .3em !important;
+    top: 50% !important;
+    width: 21px !important;
+    height: 21px !important;
+    margin: -10px 0 0 0 !important;
+    padding: 1px !important;
+    cursor: pointer !important;
+}
+
+/* Style for the close button icon */
+.ui-dialog .ui-dialog-titlebar-close span {
+    display: block !important;
+    margin: 1px !important;
+}
+
+/* Style for the dialog content area */
+.ui-dialog .ui-dialog-content {
+    position: relative !important;
+    border: 0 !important;
+    padding: 1em !important; /* Adjust padding as needed */
+    background: none !important;
+    color: #333 !important;
+    overflow: auto !important;
+    zoom: 1 !important;
+}
+
+/* Style for the dialog button pane */
+.ui-dialog .ui-dialog-buttonpane {
+    text-align: right !important;
+    border-width: 1px 0 0 0 !important;
+    background-image: none !important;
+    margin-top: .5em !important;
+    padding: .3em 1em .5em .4em !important;
+}
+
+/* Style for the buttons within the button pane */
+.ui-dialog .ui-dialog-buttonpane .ui-dialog-buttonset {
+    float: right !important;
+}
+
+/* Style for individual buttons */
+.ui-dialog .ui-dialog-buttonpane button {
+    margin: .5em .4em .5em 0 !important;
+    cursor: pointer !important;
+}
+
+/* Ensure the #dialog-box element itself doesn't have conflicting styles if it's still being targeted */
+#dialog-box {
+    /* Reset or adjust any styles that might interfere with jQuery UI positioning */
+    position: static !important; /* Let jQuery UI control positioning */
+    top: auto !important;
+    left: auto !important;
+    transform: none !important;
+    /* Keep basic appearance styles if needed, but jQuery UI content area styles might be sufficient */
+    background-color: transparent !important;
+    border: 0 !important;
+    box-shadow: none !important;
+    padding: 0 !important;
+} 
