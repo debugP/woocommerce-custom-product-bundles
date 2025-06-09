@@ -32,8 +32,53 @@ add_filter(
 add_action('wp_enqueue_scripts', 'thps_woo_custom_product_bundles_enqueue_scripts');
 function thps_woo_custom_product_bundles_enqueue_scripts() {
 	wp_enqueue_style('thps-woo-custom-product-bundle-style', plugins_url('assets/css/thps-woo-custom-product-bundle27.css', __FILE__), array(), '1.0.0');
-	wp_enqueue_script('thps-woo-custom-product-bundles-script', plugins_url('assets/js/thps-woo-custom-product-bundle26.js', __FILE__), array('jquery', 'jquery-ui-dialog', 'wc-add-to-cart'), '1.0.0', true);
+	wp_enqueue_script('thps-woo-custom-product-bundles-script', plugins_url('assets/js/thps-woo-custom-product-bundle27.js', __FILE__), array('jquery', 'jquery-ui-dialog', 'wc-add-to-cart'), '1.0.0', true);
 //	wp_register_script('google-recaptcha', "https://www.google.com/recaptcha/api.js");
+}
+
+// Add AJAX handler for adding bundles to cart
+add_action('wp_ajax_add_bundle_to_cart', 'thps_add_bundle_to_cart');
+add_action('wp_ajax_nopriv_add_bundle_to_cart', 'thps_add_bundle_to_cart');
+
+function thps_add_bundle_to_cart() {
+    check_ajax_referer('add-bundle-to-cart', 'security');
+    
+    $bundle_items = isset($_POST['bundle_items']) ? $_POST['bundle_items'] : array();
+    $bundle_total = isset($_POST['bundle_total']) ? $_POST['bundle_total'] : 0;
+    $bundle_name = isset($_POST['bundle_name']) ? $_POST['bundle_name'] : '';
+    
+    if (empty($bundle_items)) {
+        wp_send_json_error(array('message' => 'No items selected'));
+        return;
+    }
+    
+    // Create cart item data
+    $cart_item_data = array(
+        'bundle_items' => $bundle_items,
+        'bundle_total' => $bundle_total,
+        'bundle_name' => $bundle_name,
+        'product_type' => 'product_bundle'
+    );
+    
+    // Add to cart
+    $added = WC()->cart->add_to_cart(
+        $bundle_items[0]['product_id'], // Use first product as main product
+        1, // Quantity
+        0, // Variation ID
+        array(), // Variation
+        $cart_item_data
+    );
+    
+    if ($added) {
+        wp_send_json_success(array(
+            'message' => 'Bundle added to cart successfully',
+            'cart_url' => wc_get_cart_url()
+        ));
+    } else {
+        wp_send_json_error(array('message' => 'Error adding bundle to cart'));
+    }
+    
+    wp_die();
 }
 
 function thps_woo_custom_product_bundles_scripts() {
