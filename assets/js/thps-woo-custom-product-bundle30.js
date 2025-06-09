@@ -1,4 +1,4 @@
-console.log("Script file loaded: thps-woo-custom-product-bundle27.js");
+console.log("Script file loaded: thps-woo-custom-product-bundle29.js");
 
 var bundleTotalPrice = 0;
 var dialogBox;
@@ -129,40 +129,34 @@ jQuery(document).ready(function($) {
         var bundleItems = JSON.parse($form.find('.bundle_items').val() || '[]');
         console.log("Adding bundle items to cart:", bundleItems);
         
-        // Prepare cart data
-        var cartData = {
-            action: 'add_bundle_to_cart',
-            security: thps_bundle_params.security,
-            bundle_items: bundleItems,
-            bundle_total: bundleTotalPrice.toFixed(2),
-            bundle_name: 'Custom Perfume Bundle',
-            product_type: 'product_bundle'
-        };
-        
-        // Add to cart via AJAX
-        $.ajax({
-            type: 'POST',
-            url: thps_bundle_params.ajax_url,
-            data: cartData,
-            success: function(response) {
-                console.log("Add to cart response:", response);
-                if (response.success) {
-                    console.log("Successfully added to cart, redirecting...");
-                    window.location.href = response.data.cart_url;
-                } else {
-                    console.error("Error response:", response);
-                    alertValidationError(response.data.message || 'Error adding bundle to cart');
-                }
-            },
-            error: function(xhr, status, error) {
-                console.error("Add to cart error:", {
-                    status: status,
-                    error: error,
-                    response: xhr.responseText
-                });
-                alertValidationError('Error adding bundle to cart. Please try again.');
-            }
+        // Create a new form for submission
+        var $submitForm = $('<form>', {
+            'method': 'POST',
+            'action': wc_add_to_cart_params.wc_ajax_url.toString().replace('%%endpoint%%', 'add_to_cart')
         });
+        
+        // Add bundle data as hidden fields
+        $submitForm.append($('<input>', {
+            'type': 'hidden',
+            'name': 'add-to-cart',
+            'value': bundleItems[0].product_id
+        }));
+        
+        $submitForm.append($('<input>', {
+            'type': 'hidden',
+            'name': 'bundle_items',
+            'value': JSON.stringify(bundleItems)
+        }));
+        
+        $submitForm.append($('<input>', {
+            'type': 'hidden',
+            'name': 'bundle_total',
+            'value': bundleTotalPrice.toFixed(2)
+        }));
+        
+        // Append form to body and submit
+        $('body').append($submitForm);
+        $submitForm.submit();
         
         return false;
     });

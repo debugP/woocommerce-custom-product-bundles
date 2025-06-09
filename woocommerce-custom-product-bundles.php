@@ -32,7 +32,7 @@ add_filter(
 add_action('wp_enqueue_scripts', 'thps_woo_custom_product_bundles_enqueue_scripts');
 function thps_woo_custom_product_bundles_enqueue_scripts() {
 	wp_enqueue_style('thps-woo-custom-product-bundle-style', plugins_url('assets/css/thps-woo-custom-product-bundle27.css', __FILE__), array(), '1.0.0');
-	wp_enqueue_script('thps-woo-custom-product-bundles-script', plugins_url('assets/js/thps-woo-custom-product-bundle29.js', __FILE__), array('jquery', 'jquery-ui-dialog', 'wc-add-to-cart'), '1.0.0', true);
+	wp_enqueue_script('thps-woo-custom-product-bundles-script', plugins_url('assets/js/thps-woo-custom-product-bundle30.js', __FILE__), array('jquery', 'jquery-ui-dialog', 'wc-add-to-cart'), '1.0.0', true);
 	
 	// Localize the script with new data
 	wp_localize_script('thps-woo-custom-product-bundles-script', 'thps_bundle_params', array(
@@ -1982,4 +1982,62 @@ add_action( 'woocommerce_add_to_cart_validation', 'thps_validate_captcha', 11, 2
 add_action('after_setup_theme', 'thps_add_image_sizes');
 function thps_add_image_sizes() {
     add_image_size('shop_mignon', 90, 90, true);
+}
+
+// Add filter for add to cart
+add_filter('woocommerce_add_cart_item_data', 'thps_add_bundle_to_cart_data', 10, 3);
+function thps_add_bundle_to_cart_data($cart_item_data, $product_id, $variation_id) {
+    error_log('Adding bundle to cart - Product ID: ' . $product_id);
+    
+    if (isset($_POST['bundle_items'])) {
+        error_log('Bundle items found in POST data');
+        $bundle_items = json_decode(stripslashes($_POST['bundle_items']), true);
+        $bundle_total = isset($_POST['bundle_total']) ? $_POST['bundle_total'] : 0;
+        
+        error_log('Bundle data: ' . print_r($bundle_items, true));
+        
+        if (!empty($bundle_items)) {
+            $cart_item_data['bundle_items'] = $bundle_items;
+            $cart_item_data['bundle_total'] = $bundle_total;
+            $cart_item_data['product_type'] = 'product_bundle';
+            
+            // Make sure this item is unique
+            $cart_item_data['unique_key'] = md5(microtime() . rand());
+            
+            error_log('Bundle added to cart successfully');
+        }
+    }
+    
+    return $cart_item_data;
+}
+
+// Add filter for cart item name
+add_filter('woocommerce_cart_item_name', 'thps_bundle_cart_item_name', 10, 3);
+function thps_bundle_cart_item_name($name, $cart_item, $cart_item_key) {
+    if (isset($cart_item['product_type']) && $cart_item['product_type'] === 'product_bundle') {
+        $name = 'Custom Perfume Bundle';
+    }
+    return $name;
+}
+
+// Add filter for cart item price
+add_filter('woocommerce_cart_item_price', 'thps_bundle_cart_item_price', 10, 3);
+function thps_bundle_cart_item_price($price, $cart_item, $cart_item_key) {
+    if (isset($cart_item['product_type']) && $cart_item['product_type'] === 'product_bundle') {
+        if (isset($cart_item['bundle_total'])) {
+            return wc_price($cart_item['bundle_total']);
+        }
+    }
+    return $price;
+}
+
+// Add filter for cart item subtotal
+add_filter('woocommerce_cart_item_subtotal', 'thps_bundle_cart_item_subtotal', 10, 3);
+function thps_bundle_cart_item_subtotal($subtotal, $cart_item, $cart_item_key) {
+    if (isset($cart_item['product_type']) && $cart_item['product_type'] === 'product_bundle') {
+        if (isset($cart_item['bundle_total'])) {
+            return wc_price($cart_item['bundle_total']);
+        }
+    }
+    return $subtotal;
 }
