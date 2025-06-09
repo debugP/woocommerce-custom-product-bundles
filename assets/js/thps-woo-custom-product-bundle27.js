@@ -132,6 +132,7 @@ jQuery(document).ready(function($) {
         // Prepare cart data
         var cartData = {
             action: 'add_bundle_to_cart',
+            security: thps_bundle_params.security,
             bundle_items: bundleItems,
             bundle_total: bundleTotalPrice.toFixed(2),
             bundle_name: 'Custom Perfume Bundle',
@@ -141,7 +142,7 @@ jQuery(document).ready(function($) {
         // Add to cart via AJAX
         $.ajax({
             type: 'POST',
-            url: wc_add_to_cart_params.ajax_url,
+            url: thps_bundle_params.ajax_url,
             data: cartData,
             success: function(response) {
                 console.log("Add to cart response:", response);
