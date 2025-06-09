@@ -147,14 +147,19 @@ jQuery(document).ready(function($) {
             success: function(response) {
                 console.log("Add to cart response:", response);
                 if (response.success) {
-                    // Redirect to cart
-                    window.location.href = wc_add_to_cart_params.cart_url;
+                    console.log("Successfully added to cart, redirecting...");
+                    window.location.href = response.data.cart_url;
                 } else {
-                    alertValidationError(response.message || 'Error adding bundle to cart');
+                    console.error("Error response:", response);
+                    alertValidationError(response.data.message || 'Error adding bundle to cart');
                 }
             },
             error: function(xhr, status, error) {
-                console.error("Add to cart error:", error);
+                console.error("Add to cart error:", {
+                    status: status,
+                    error: error,
+                    response: xhr.responseText
+                });
                 alertValidationError('Error adding bundle to cart. Please try again.');
             }
         });

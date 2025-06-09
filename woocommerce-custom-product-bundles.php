@@ -32,7 +32,7 @@ add_filter(
 add_action('wp_enqueue_scripts', 'thps_woo_custom_product_bundles_enqueue_scripts');
 function thps_woo_custom_product_bundles_enqueue_scripts() {
 	wp_enqueue_style('thps-woo-custom-product-bundle-style', plugins_url('assets/css/thps-woo-custom-product-bundle27.css', __FILE__), array(), '1.0.0');
-	wp_enqueue_script('thps-woo-custom-product-bundles-script', plugins_url('assets/js/thps-woo-custom-product-bundle27.js', __FILE__), array('jquery', 'jquery-ui-dialog', 'wc-add-to-cart'), '1.0.0', true);
+	wp_enqueue_script('thps-woo-custom-product-bundles-script', plugins_url('assets/js/thps-woo-custom-product-bundle29.js', __FILE__), array('jquery', 'jquery-ui-dialog', 'wc-add-to-cart'), '1.0.0', true);
 	
 	// Localize the script with new data
 	wp_localize_script('thps-woo-custom-product-bundles-script', 'thps_bundle_params', array(
@@ -47,41 +47,63 @@ add_action('wp_ajax_add_bundle_to_cart', 'thps_add_bundle_to_cart');
 add_action('wp_ajax_nopriv_add_bundle_to_cart', 'thps_add_bundle_to_cart');
 
 function thps_add_bundle_to_cart() {
-    check_ajax_referer('add-bundle-to-cart', 'security');
+    error_log('Bundle add to cart started');
+    
+    // Verify nonce
+    if (!isset($_POST['security']) || !wp_verify_nonce($_POST['security'], 'add-bundle-to-cart')) {
+        error_log('Security check failed');
+        wp_send_json_error(array('message' => 'Security check failed'));
+        return;
+    }
     
     $bundle_items = isset($_POST['bundle_items']) ? $_POST['bundle_items'] : array();
     $bundle_total = isset($_POST['bundle_total']) ? $_POST['bundle_total'] : 0;
     $bundle_name = isset($_POST['bundle_name']) ? $_POST['bundle_name'] : '';
     
+    error_log('Bundle data received: ' . print_r($_POST, true));
+    
     if (empty($bundle_items)) {
+        error_log('No items in bundle');
         wp_send_json_error(array('message' => 'No items selected'));
         return;
     }
     
-    // Create cart item data
-    $cart_item_data = array(
-        'bundle_items' => $bundle_items,
-        'bundle_total' => $bundle_total,
-        'bundle_name' => $bundle_name,
-        'product_type' => 'product_bundle'
-    );
-    
-    // Add to cart
-    $added = WC()->cart->add_to_cart(
-        $bundle_items[0]['product_id'], // Use first product as main product
-        1, // Quantity
-        0, // Variation ID
-        array(), // Variation
-        $cart_item_data
-    );
-    
-    if ($added) {
-        wp_send_json_success(array(
-            'message' => 'Bundle added to cart successfully',
-            'cart_url' => wc_get_cart_url()
-        ));
-    } else {
-        wp_send_json_error(array('message' => 'Error adding bundle to cart'));
+    try {
+        // Create cart item data
+        $cart_item_data = array(
+            'bundle_items' => $bundle_items,
+            'bundle_total' => $bundle_total,
+            'bundle_name' => $bundle_name,
+            'product_type' => 'product_bundle'
+        );
+        
+        error_log('Adding to cart with data: ' . print_r($cart_item_data, true));
+        
+        // Get the first product ID from bundle items
+        $first_product_id = $bundle_items[0]['product_id'];
+        
+        // Add to cart
+        $added = WC()->cart->add_to_cart(
+            $first_product_id, // Use first product as main product
+            1, // Quantity
+            0, // Variation ID
+            array(), // Variation
+            $cart_item_data
+        );
+        
+        if ($added) {
+            error_log('Successfully added to cart');
+            wp_send_json_success(array(
+                'message' => 'Bundle added to cart successfully',
+                'cart_url' => wc_get_cart_url()
+            ));
+        } else {
+            error_log('Failed to add to cart');
+            wp_send_json_error(array('message' => 'Failed to add bundle to cart'));
+        }
+    } catch (Exception $e) {
+        error_log('Exception while adding to cart: ' . $e->getMessage());
+        wp_send_json_error(array('message' => 'Error: ' . $e->getMessage()));
     }
     
     wp_die();
