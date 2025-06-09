@@ -1480,7 +1480,8 @@ function thps_woocommerce_add_to_cart( $cart_item_key, $product_id, $quantity, $
             }
             $message .= '</div>';
 
-            wp_mail( $to, $subject, $message, $headers );
+            // Temporaneamente commentato per testare il ritardo:
+            // wp_mail( $to, $subject, $message, $headers );
         }
     }
 }
