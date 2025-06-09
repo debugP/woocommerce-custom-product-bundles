@@ -32,7 +32,7 @@ add_filter(
 add_action('wp_enqueue_scripts', 'thps_woo_custom_product_bundles_enqueue_scripts');
 function thps_woo_custom_product_bundles_enqueue_scripts() {
 	wp_enqueue_style('thps-woo-custom-product-bundle-style', plugins_url('assets/css/thps-woo-custom-product-bundle27.css', __FILE__), array(), '1.0.0');
-	wp_enqueue_script('thps-woo-custom-product-bundles-script', plugins_url('assets/js/thps-woo-custom-product-bundle23.js', __FILE__), array('jquery', 'jquery-ui-dialog', 'wc-add-to-cart'), '1.0.0', true);
+	wp_enqueue_script('thps-woo-custom-product-bundles-script', plugins_url('assets/js/thps-woo-custom-product-bundle24.js', __FILE__), array('jquery', 'jquery-ui-dialog', 'wc-add-to-cart'), '1.0.0', true);
 //	wp_register_script('google-recaptcha', "https://www.google.com/recaptcha/api.js");
 }
 
@@ -1425,22 +1425,32 @@ add_filter( 'woocommerce_add_cart_item_data','thps_add_cart_item_data', 10, 2 );
  * Sends questionnaire email to administrator when adding a perfumes therapy kit into cart.
  */
 function thps_woocommerce_add_to_cart( $cart_item_key, $product_id, $quantity, $variation_id, $variation, $cart_item_data ) {
-    // Initialize product_type with a default value
-    $product_type = isset($_REQUEST['product_type']) ? sanitize_text_field($_REQUEST['product_type']) : '';
+    if(isset($cart_item_data['bundle_items'])) {
+        $bundle_items = $cart_item_data['bundle_items'];
+        $bundle_total = $cart_item_data['bundle_total'];
+        $bundle_name = $cart_item_data['bundle_name'];
+        $has_questionnaire = $cart_item_data['has_questionnaire'];
 
-    if($product_type === "product_bundle"){
-        $bundle_total = isset($_REQUEST['bundle_total']) ? sanitize_text_field($_REQUEST['bundle_total']) : '';
-        $bundle_name  = isset($_REQUEST['bundle_name']) ? sanitize_text_field($_REQUEST['bundle_name']) : '';
-        $bundle_items = isset($_REQUEST['bundle_items']) ? stripslashes($_REQUEST['bundle_items']) : '';
-        $bundle_items_frmtd = thps_bundle_items_formatted($bundle_items);
+        // Process bundle items from form submission
+        $form_bundle_items = array();
+        $index = 0;
+        while(isset($_POST['bundle_item_' . $index . '_product_id'])) {
+            $form_bundle_items[] = array(
+                'product_id' => $_POST['bundle_item_' . $index . '_product_id'],
+                'title' => $_POST['bundle_item_' . $index . '_title'],
+                'price' => $_POST['bundle_item_' . $index . '_price']
+            );
+            $index++;
+        }
+        
+        if(!empty($form_bundle_items)) {
+            $bundle_items = $form_bundle_items;
+        }
 
         set_bundle_items_in_session($cart_item_key, $bundle_items);
         set_bundle_total_in_session($cart_item_key, $bundle_total);
         set_bundle_name_in_session($cart_item_key, $bundle_name);
-        set_bundle_name_in_session_for_msg($product_id, $bundle_name);
- //       $cart_item_data = $bundle_items_frmtd;
 
-        $has_questionnaire = isset($_REQUEST['has_questionnaire']) ? sanitize_text_field($_REQUEST['has_questionnaire']) : '';
         if($has_questionnaire === "true" || $has_questionnaire === true){
             $questionnaire = thps_perfume_therapy_questionnaire();
 
