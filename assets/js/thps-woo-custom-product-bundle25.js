@@ -1,4 +1,4 @@
-console.log("Script file loaded: thps-woo-custom-product-bundle24.js");
+console.log("Script file loaded: thps-woo-custom-product-bundle25.js");
 
 var bundleTotalPrice = 0;
 var dialogBox;
