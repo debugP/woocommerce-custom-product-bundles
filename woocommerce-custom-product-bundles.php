@@ -32,7 +32,7 @@ add_filter(
 add_action('wp_enqueue_scripts', 'thps_woo_custom_product_bundles_enqueue_scripts');
 function thps_woo_custom_product_bundles_enqueue_scripts() {
 	wp_enqueue_style('thps-woo-custom-product-bundle-style', plugins_url('assets/css/thps-woo-custom-product-bundle27.css', __FILE__), array(), '1.0.0');
-	wp_enqueue_script('thps-woo-custom-product-bundles-script', plugins_url('assets/js/thps-woo-custom-product-bundle30.js', __FILE__), array('jquery', 'jquery-ui-dialog', 'wc-add-to-cart'), '1.0.0', true);
+	wp_enqueue_script('thps-woo-custom-product-bundles-script', plugins_url('assets/js/thps-woo-custom-product-bundle31.js', __FILE__), array('jquery', 'jquery-ui-dialog', 'wc-add-to-cart'), '1.0.0', true);
 	
 	// Localize the script with new data
 	wp_localize_script('thps-woo-custom-product-bundles-script', 'thps_bundle_params', array(
@@ -2016,6 +2016,19 @@ add_filter('woocommerce_cart_item_name', 'thps_bundle_cart_item_name', 10, 3);
 function thps_bundle_cart_item_name($name, $cart_item, $cart_item_key) {
     if (isset($cart_item['product_type']) && $cart_item['product_type'] === 'product_bundle') {
         $name = 'Custom Perfume Bundle';
+        
+        // Add bundle items as description
+        if (isset($cart_item['bundle_items']) && is_array($cart_item['bundle_items'])) {
+            $items = array();
+            foreach ($cart_item['bundle_items'] as $item) {
+                if (isset($item['title'])) {
+                    $items[] = $item['title'];
+                }
+            }
+            if (!empty($items)) {
+                $name .= ' (' . implode(', ', $items) . ')';
+            }
+        }
     }
     return $name;
 }
@@ -2040,4 +2053,39 @@ function thps_bundle_cart_item_subtotal($subtotal, $cart_item, $cart_item_key) {
         }
     }
     return $subtotal;
+}
+
+// Add filter for cart item thumbnail
+add_filter('woocommerce_cart_item_thumbnail', 'thps_bundle_cart_item_thumbnail', 10, 3);
+function thps_bundle_cart_item_thumbnail($thumbnail, $cart_item, $cart_item_key) {
+    if (isset($cart_item['product_type']) && $cart_item['product_type'] === 'product_bundle') {
+        // Use a default image for bundles
+        return '<img src="' . plugins_url('assets/images/bundle-default.jpg', __FILE__) . '" alt="Bundle" />';
+    }
+    return $thumbnail;
+}
+
+// Add filter for cart item remove link
+add_filter('woocommerce_cart_item_remove_link', 'thps_bundle_cart_item_remove_link', 10, 2);
+function thps_bundle_cart_item_remove_link($link, $cart_item_key) {
+    return $link;
+}
+
+// Add filter for cart item quantity
+add_filter('woocommerce_cart_item_quantity', 'thps_bundle_cart_item_quantity', 10, 3);
+function thps_bundle_cart_item_quantity($quantity, $cart_item_key, $cart_item) {
+    if (isset($cart_item['product_type']) && $cart_item['product_type'] === 'product_bundle') {
+        return 1; // Bundles are always quantity 1
+    }
+    return $quantity;
+}
+
+// Add filter for cart item quantity input
+add_filter('woocommerce_cart_item_quantity_args', 'thps_bundle_cart_item_quantity_args', 10, 2);
+function thps_bundle_cart_item_quantity_args($args, $cart_item) {
+    if (isset($cart_item['product_type']) && $cart_item['product_type'] === 'product_bundle') {
+        $args['readonly'] = true;
+        $args['disabled'] = true;
+    }
+    return $args;
 }
