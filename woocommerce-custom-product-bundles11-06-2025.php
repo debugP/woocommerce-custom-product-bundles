@@ -32,11 +32,74 @@ add_filter(
 add_action('wp_enqueue_scripts', 'thps_woo_custom_product_bundles_enqueue_scripts');
 function thps_woo_custom_product_bundles_enqueue_scripts() {
 	wp_enqueue_style('thps-woo-custom-product-bundle-style', plugins_url('assets/css/thps-woo-custom-product-bundle27.css', __FILE__), array(), '1.0.0');
-	wp_enqueue_script('thps-woo-custom-product-bundles-script', plugins_url('assets/js/thps-woo-custom-product-bundle23.js', __FILE__), array('jquery', 'jquery-ui-dialog', 'wc-add-to-cart'), '1.0.0', true);
-//	wp_register_script('google-recaptcha', "https://www.google.com/recaptcha/api.js");
+	// AGGIORNA QUI: Assicurati che il nome del file JS sia corretto.
+    // Ho incrementato il numero per esempio, usa quello che ti serve per la prossima iterazione.
+	wp_enqueue_script('thps-woo-custom-product-bundles-script', plugins_url('assets/js/thps-woo-custom-product-bundle23.js', __FILE__), array('jquery'), '1.0.0', true);
 }
 
 
+/**
+ * Funzione per aggiungere l'elemento di visualizzazione del totale del bundle.
+ * Puoi cambiare l'hook 'woocommerce_single_product_summary' a seconda di dove vuoi che appaia.
+ * Altri hook utili potrebbero essere:
+ * - woocommerce_before_add_to_cart_button
+ * - woocommerce_after_add_to_cart_button
+ */
+add_action( 'woocommerce_before_add_to_cart_button', 'thps_add_bundle_total_display', 15 ); // Esempio: prima del pulsante Aggiungi al Carrello
+function thps_add_bundle_total_display() {
+    // Non generare l'HTML se non siamo su una pagina di prodotto singola o se non è il tipo di prodotto gestito dal tuo plugin
+    if ( ! is_product() ) {
+        return;
+    }
+    ?>
+    <div class="bundle-total-wrapper" style="margin-bottom: 15px; font-size: 1.2em; font-weight: bold;">
+        Totale Composto: <span id="bundle-total-display">0.00</span> €
+    </div>
+    <?php
+}
+
+/**
+ * Funzione per aggiungere l'elemento del messaggio di avviso del bundle.
+ * Posizionalo dove ha senso mostrare l'avviso all'utente.
+ * 'woocommerce_before_add_to_cart_button' è un buon punto, ma puoi sperimentare.
+ */
+add_action( 'woocommerce_before_add_to_cart_button', 'thps_add_bundle_warning_message', 10 ); // Esempio: prima del pulsante Aggiungi al Carrello
+function thps_add_bundle_warning_message() {
+    if ( ! is_product() ) {
+        return;
+    }
+    ?>
+    <p id="bundle-warning-message" style="display:none; color: red; font-weight: bold; margin-top: 10px; margin-bottom: 10px;"></p>
+    <?php
+}
+
+/**
+ * Funzione per aggiungere la classe 'add-to-cart-button' al pulsante standard di WooCommerce "Aggiungi al carrello".
+ * Questo hook filtra gli attributi del pulsante "Aggiungi al carrello" standard.
+ * Se il tuo pulsante è custom e non usa questo hook, dovrai modificarlo direttamente nel tuo template PHP.
+ */
+add_filter( 'woocommerce_loop_add_to_cart_args', 'thps_add_add_to_cart_button_class_loop', 10, 2 );
+add_filter( 'woocommerce_product_add_to_cart_args', 'thps_add_add_to_cart_button_class_single', 10, 2 );
+
+function thps_add_add_to_cart_button_class_loop( $args, $product ) {
+    if ( ! isset( $args['class'] ) ) {
+        $args['class'] = '';
+    }
+    $args['class'] .= ' add-to-cart-button';
+    return $args;
+}
+
+function thps_add_add_to_cart_button_class_single( $args, $product ) {
+    if ( ! isset( $args['class'] ) ) {
+        $args['class'] = '';
+    }
+    $args['class'] .= ' add-to-cart-button';
+    return $args;
+}
+
+// Se il tuo pulsante 'Aggiungi al carrello' non è generato dai meccanismi standard di WooCommerce
+// (ad esempio, se lo generi manualmente in un template custom),
+// dovrai assicurarti che abbia questa classe. 
 
 function thps_woo_custom_product_bundles_scripts() {
 	wp_enqueue_style  ('thps-woo-custom-product-bundles-style');
@@ -1734,7 +1797,7 @@ function thps_wc_aelia_convert($cart_item_key, $amount){
  *--------------------
  * CAPTCHA Validation
  *--------------------
- *
+ 
 function thps_secure_captcha_1(){
 	?>
     <div id='thpt_recaptcha_div'></div>
