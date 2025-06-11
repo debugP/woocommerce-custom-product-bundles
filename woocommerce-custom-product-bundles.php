@@ -29,7 +29,7 @@ add_action('wp_enqueue_scripts', 'thps_woo_custom_product_bundles_enqueue_script
 function thps_woo_custom_product_bundles_enqueue_scripts() {
 	wp_enqueue_style('thps-woo-custom-product-bundle-style', plugins_url('assets/css/thps-woo-custom-product-bundle27.css', __FILE__), array(), '1.0.0');
 
-	wp_enqueue_script('thps-woo-custom-product-bundles-script', plugins_url('assets/js/thps-woo-custom-product-bundle26.js', __FILE__), array('jquery'), '1.0.0', true);
+	wp_enqueue_script('thps-woo-custom-product-bundles-script', plugins_url('assets/js/thps-woo-custom-product-bundle27.js', __FILE__), array('jquery'), '1.0.0', true);
 
 //	wp_register_script('google-recaptcha', "https://www.google.com/recaptcha/api.js");
 }
@@ -823,7 +823,7 @@ function thps_actions_row( $bundle_name, $product, $submit_btn_class, $min_fragr
 		echo('<span class="price amount">');
 			_e( 'Total', 'woocommerce-custom-product-bundles' );
 			echo (': '. get_woocommerce_currency_symbol() .'&nbsp;');
-			echo('<span class="amount bundle_total_display">');
+			echo('<span id="bundle-total-display" class="amount">');
 				echo $product->get_display_price();
 			echo('</span>');
 		echo('</span>');
@@ -1066,7 +1066,7 @@ function thps_display_products_list(
 
         // Colonna Checkbox
         echo '<td style="vertical-align:middle;text-align:center !important;width:25px;">';
-        echo '<input type="checkbox" name="price_' . esc_attr( $product_id ) . '" class="item-price ' . esc_attr( $ex_class ) . '" value="' . esc_attr( $price ) . '" onclick="selectBundleItem(this,\'' . esc_js( $product_kit_id ) . '\')" ' . $checked . '/>';
+        echo '<input type="checkbox" name="price_' . esc_attr( $product_id ) . '" class="item-price' . esc_attr( $ex_class ) . '" value="' . esc_attr( $price ) . '" onclick="selectBundleItem(this,\'' . esc_js( $product_kit_id ) . '\')" ' . $checked . '/>';
         // Aggiungiamo gli input hidden necessari per il calcolo del totale
         echo '<input type="hidden" name="product_id" value="' . esc_attr( $product_id ) . '"/>';
         echo '<input type="hidden" name="display_price" value="' . esc_attr( wc_get_price_to_display( $product ) ) . '"/>';
