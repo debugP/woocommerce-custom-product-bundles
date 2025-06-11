@@ -28,7 +28,9 @@ add_filter(
 add_action('wp_enqueue_scripts', 'thps_woo_custom_product_bundles_enqueue_scripts');
 function thps_woo_custom_product_bundles_enqueue_scripts() {
 	wp_enqueue_style('thps-woo-custom-product-bundle-style', plugins_url('assets/css/thps-woo-custom-product-bundle27.css', __FILE__), array(), '1.0.0');
-	wp_enqueue_script('thps-woo-custom-product-bundles-script', plugins_url('assets/js/thps-woo-custom-product-bundle25.js', __FILE__), array('jquery', 'jquery-ui-dialog', 'wc-add-to-cart'), '1.0.0', true);
+
+	wp_enqueue_script('thps-woo-custom-product-bundles-script', plugins_url('assets/js/thps-woo-custom-product-bundle26.js', __FILE__), array('jquery'), '1.0.0', true);
+
 //	wp_register_script('google-recaptcha', "https://www.google.com/recaptcha/api.js");
 }
 
@@ -54,6 +56,22 @@ function thps_add_bundle_total_display() {
     </div>
     <?php
 }
+
+// INIZIO: NUOVE FUNZIONI PER GENERARE L'HTML DEL TOTALE E DELL'AVVISO
+function thps_get_bundle_total_display_html() {
+    return '
+    <div class="bundle-total-wrapper" style="margin-bottom: 15px; font-size: 1.2em; font-weight: bold;">
+        Totale Composto: <span id="bundle-total-display">0.00</span> €
+    </div>';
+}
+
+function thps_get_bundle_warning_message_html() {
+    return '
+    <p id="bundle-warning-message" style="display:none; color: red; font-weight: bold; margin-top: 10px; margin-bottom: 10px;"></p>';
+}
+// FINE: NUOVE FUNZIONI PER GENERARE L'HTML DEL TOTALE E DELL'AVVISO
+
+
 
 /**
  * Funzione per aggiungere l'elemento del messaggio di avviso del bundle.
@@ -127,7 +145,7 @@ include_once(ABSPATH.'wp-admin/includes/plugin.php');
  * WooCommerce Custom Product Kit
  * -------------------------------
  *
- * Register a shortcode displays products from given variations and categories.
+ * Register a shortcode to displays products from given variations and categories.
  *
  * Use: [woo_product_kit category="olfactory-jewels"]
  *
@@ -203,8 +221,13 @@ function thps_woo_custom_product_kit($atts) {
 	thps_modal_box();
 	//thps_actions_row( $bundle_name, $bundle_product, 'sample-kit', $min_fragrances, $max_fragrances );
 	thps_display_products_grid($id, $products, $per_row, $index);
+
+	// INSERISCI QUI IL DISPLAY DEL TOTALE E IL MESSAGGIO DI AVVISO
+	echo thps_get_bundle_total_display_html();
+	echo thps_get_bundle_warning_message_html();
+
 	echo('<input type="hidden" name="has_questionnaire" value="false" />');
-//	thps_secure_captcha();
+	// thps_secure_captcha();
 	thps_actions_row( $bundle_name, $bundle_product, 'sample-kit', $min_fragrances, $max_fragrances );
 	echo('</form>');
 
@@ -807,7 +830,7 @@ function thps_actions_row( $bundle_name, $product, $submit_btn_class, $min_fragr
 			echo('<input type="hidden" name="validation_min_req" class="min_required" value="'. $min_fragrances .'" />');
 			echo('<input type="hidden" name="validation_max_req" class="max_required" value="'. $max_fragrances .'" />');
 
-			echo('<button type="submit" class="single_add_to_cart_button button alt '. $submit_btn_class .'" '.$btn_disabled.'>');
+			echo('<button type="submit" class="single add-to-cart-button _add_to_cart_button button alt '. $submit_btn_class .'" '.$btn_disabled.'>');
 			_e( 'Add To Cart', 'woocommerce-custom-product-bundles' );
 			echo('</button>');
 		echo('</span>');
