@@ -220,6 +220,10 @@ function thps_woo_custom_product_kit($atts) {
 	echo('<form id="thps_product_bundle_'. $id .'" class="thps_product_bundle" method="post" enctype="multipart/form-data">');
 	thps_modal_box();
 	//thps_actions_row( $bundle_name, $bundle_product, 'sample-kit', $min_fragrances, $max_fragrances );
+
+	echo thps_get_bundle_total_display_html();
+	echo thps_get_bundle_warning_message_html();
+
 	thps_display_products_grid($id, $products, $per_row, $index);
 
 	// INSERISCI QUI IL DISPLAY DEL TOTALE E IL MESSAGGIO DI AVVISO
@@ -296,6 +300,9 @@ function thps_woo_custom_perfume($atts) {
 	echo('<form id="thps_product_bundle_'. $id .'" class="thps_product_bundle" method="post" enctype="multipart/form-data">');
 	thps_modal_box();
 	//thps_actions_row( $bundle_name, $bundle_product, 'custom-perfume', $min_fragrances, $max_fragrances );
+
+	echo thps_get_bundle_total_display_html();
+	echo thps_get_bundle_warning_message_html();
 
 	echo('<div class="shop_columns_'. $per_row .' thps_shop_columns">');
 	echo('<ul id="ID_customPerfume" class="products thps-products">'); // MOD J
@@ -471,6 +478,9 @@ function thps_woo_perfume_therapy($atts) {
 	echo('<form id="thps_product_bundle_'. $id .'" class="thps_product_bundle" method="post" enctype="multipart/form-data">');
 	thps_modal_box();
 	//thps_actions_row( $bundle_name, $bundle_product, 'perfume-therapy', $min_fragrances, $max_fragrances);
+
+	echo thps_get_bundle_total_display_html();
+	echo thps_get_bundle_warning_message_html();
 
 	echo('<div class="questionnaire">');
 	_e( '1. Indicate the essences that you would like to enter into the composition of your bespoke perfume', 'woocommerce-custom-product-bundles' );
