@@ -7,8 +7,8 @@ defined( 'ABSPATH' ) OR exit;
  * Domain Path: /languages
  */
 
-
-/**
+ 
+ /**
  * Disabilita srcset e forza sizes=40px per 'shop_thumbnail'
  */
 add_filter( 'wp_calculate_image_srcset', '__return_false' );
@@ -52,23 +52,28 @@ function thps_add_bundle_total_display() {
     }
     ?>
     <div class="bundle-total-wrapper" style="margin-bottom: 15px; font-size: 1.2em; font-weight: bold;">
-        Totale Composto: <span id="bundle-total-display">0.00</span> €
-    </div>
+	    Totale Composto: <span id="bundle_total_display">0.00</span> €
+	</div>
     <?php
 }
 
 // INIZIO: NUOVE FUNZIONI PER GENERARE L'HTML DEL TOTALE E DELL'AVVISO
 function thps_get_bundle_total_display_html() {
-    return '
+    return;
+    }
+    ?>
     <div class="bundle-total-wrapper" style="margin-bottom: 15px; font-size: 1.2em; font-weight: bold;">
-        Totale Composto: <span id="bundle-total-display">0.00</span> €
-    </div>';
-}
+	    Totale Composto: <span id="bundle_total_display">0.00</span> €
+	</div>
+    <?php
 
 function thps_get_bundle_warning_message_html() {
-    return '
-    <p id="bundle-warning-message" style="display:none; color: red; font-weight: bold; margin-top: 10px; margin-bottom: 10px;"></p>';
-}
+	return;
+    }
+    ?>
+	<p id="bundle_warning_message" style="display:none; color: red; font-weight: bold; margin-top: 10px; margin-bottom: 10px;"></p>';
+
+    <?php
 // FINE: NUOVE FUNZIONI PER GENERARE L'HTML DEL TOTALE E DELL'AVVISO
 
 
@@ -86,7 +91,7 @@ function thps_add_bundle_warning_message() {
         return;
     }
     ?>
-    <p id="bundle-warning-message" style="display:none; color: red; font-weight: bold; margin-top: 10px; margin-bottom: 10px;"></p>
+    <p id="bundle_warning_message" style="display:none; color: red; font-weight: bold; margin-top: 10px; margin-bottom: 10px;"></p>
     <?php
 }
 
