@@ -1,127 +1,111 @@
-console.log("Script file loaded: thps-woo-custom-product-bundle21.js");
+// thps-woo-custom-product-bundle21.js
 
-var bundleTotalPrice = 0;
-var dialogBox;
+// Assicurati che lo script venga eseguito solo quando il DOM è completamente caricato
+document.addEventListener('DOMContentLoaded', function() {
+    console.log('Script file loaded: thps-woo-custom-product-bundle21.js');
 
-function updateBundleTotal() {
-    console.log("updateBundleTotal called");
-    bundleTotalPrice = 0;
-    var bundleItems = [];
-    jQuery('.item-price:checked').each(function() {
-        var price = jQuery(this).val();
-        if (price) {
-            bundleTotalPrice += parseFloat(price);
-            var $item = jQuery(this).closest('li.product, tr');
-            var title = $item.find('.product-name, td:nth-child(2) a').first().text().trim();
-            var product_id = $item.find('.product_id').val();
-            var display_price = $item.find('.display_price').val();
-            var quantity = $item.find('.quantity').val();
-            var tax_included = $item.find('.tax_included').val();
-            var desc = $item.find('.desc').val();
-            bundleItems.push({
-                product_id: product_id,
-                title: title,
-                quantity: quantity,
-                price: price,
-                display_price: display_price,
-                tax_included: tax_included,
-                desc: desc
-            });
-        }
-    });
-    jQuery('.bundle_total_display').text(bundleTotalPrice.toFixed(2));
-    jQuery('.bundle_total').val(bundleTotalPrice.toFixed(2));
-    jQuery('.bundle_items').val(JSON.stringify(bundleItems));
-    console.log("Bundle total updated:", bundleTotalPrice);
-    console.log("Bundle items:", bundleItems);
-}
+    // Selettori (assicurati che questi selettori corrispondano ai tuoi elementi HTML)
+    // Usiamo una classe generica per selezionare tutte le checkbox pertinenti
+    const bundleCheckboxes = document.querySelectorAll('.item-price'); // Tutte le tue checkbox dei "bundle items"
+    const bundleTotalDisplay = document.getElementById('bundle-total-display'); // L'elemento dove mostri il totale (es. <span id="bundle-total-display">)
+    const addToCartButton = document.querySelector('.add-to-cart-button'); // Il tuo pulsante "Aggiungi al carrello" (es. <button class="add-to-cart-button">)
+    const warningMessageContainer = document.getElementById('bundle-warning-message'); // Un elemento dove mostrare il messaggio di avviso (es. <p id="bundle-warning-message" style="display:none; color: red;">)
 
-function selectBundleItem(checkbox) {
-    console.log("selectBundleItem called with checkbox:", checkbox);
-    var $checkbox = jQuery(checkbox);
-    var $itemElement = $checkbox.closest('li.product, tr');
-    if ($checkbox.is(':checked')) {
-        $itemElement.addClass('selected-item');
-        console.log("Item selected, added selected-item class to:", $itemElement[0].tagName);
-    } else {
-        $itemElement.removeClass('selected-item');
-        console.log("Item deselected, removed selected-item class from:", $itemElement[0].tagName);
-    }
-    updateBundleTotal();
-}
+    const MIN_SELECTIONS_REQUIRED = 6; // Numero minimo di checkbox che devono essere selezionate
+    const CART_URL = '/cart/'; // URL del tuo carrello WooCommerce
 
-jQuery(document).ready(function($) {
-    console.log("Document ready, initializing JS");
-    function alertValidationError( message ){
-        console.log("alertValidationError called with message:", message);
-        $( "#dialog-box-msg" ).html(message);
-        dialogBox.dialog( "open" );
-    }
-    console.log("alertValidationError function defined inside ready");
-    dialogBox = $( "#dialog-box" ).dialog({
-        autoOpen: false,
-        modal: true,
-        buttons: {
-            OK: function() {
-                $(this).dialog("close");
-            }
-        },
-        minWidth: 350,
-        maxWidth: 500,
-        position: { my: 'center', at: 'center', of: window }
-    });
-    console.log("jQuery UI Dialog initialized");
-    updateBundleTotal();
-    $(document).on('change', '.item-price', function() {
-        selectBundleItem(this);
-    });
-    console.log("Attaching form submit handler");
-    $('form.thps_product_bundle').on('submit', function(e) {
-        console.log("Form submit handler activated");
-        e.preventDefault();
-        var $form = $(this);
-        var minProducts = parseInt($form.find('.min_required').val());
-        var selectedProducts = $form.find('.item-price:checked').length;
-        console.log("Form submit - Min products:", minProducts, "Selected products:", selectedProducts);
-        if (selectedProducts < minProducts) {
-            console.log("Validation failed: selectedProducts < minProducts");
-            alertValidationError('Please select at least ' + minProducts + ' products.');
-            return false;
-        }
-        console.log("Validation passed, preparing for AJAX submission");
+    // --- Funzioni principali ---
+
+    // 1. Funzione placeholder per `selectBundleItem`
+    // Questa funzione è necessaria perché l'HTML la chiama tramite `onclick`.
+    // La sua logica principale sarà quella di richiamare le nostre funzioni di gestione.
+    window.selectBundleItem = function(checkboxElement, productId) {
+        console.log(`selectBundleItem called for product: ${productId}`);
+        // La logica principale è gestita dagli event listener aggiunti sotto,
+        // ma questa funzione può assicurarsi che il DOM sia pronto e che le funzioni di aggiornamento vengano chiamate.
+        // Chiamiamo direttamente le nostre funzioni di gestione.
         updateBundleTotal();
-        var formData = $form.serialize();
-        console.log("Form data serialized:", formData);
-        console.log("Starting AJAX request to add to cart...");
-        $.ajax({
-            type: 'POST',
-            url: wc_add_to_cart_params.ajax_url,
-            data: formData + '&action=woocommerce_add_to_cart',
-            beforeSend: function() {
-                console.log("AJAX beforeSend: showing loading indicator (if any)");
-            },
-            success: function(response) {
-                console.log("AJAX success response:", response);
-                if (response.error) {
-                    console.error("WooCommerce AJAX Error:", response.error);
-                    if (response.error && response.error.messages) {
-                        $.each(response.error.messages, function(index, message) {
-                            alertValidationError(message);
-                        });
-                    }
-                } else {
-                    console.log("Successfully added to cart, redirecting...");
-                    window.location.href = wc_add_to_cart_params.cart_url;
+        checkMinSelections();
+    };
+
+    // 2. Funzione per aggiornare il totale del bundle
+    function updateBundleTotal() {
+        console.log('updateBundleTotal called');
+        let currentTotal = 0;
+
+        bundleCheckboxes.forEach(checkbox => {
+            if (checkbox.checked) {
+                // Prendi il valore dal 'value' dell'input, che dovrebbe essere il prezzo
+                const price = parseFloat(checkbox.value);
+                if (!isNaN(price)) {
+                    currentTotal += price;
                 }
-            },
-            error: function(xhr, status, error) {
-                console.error("AJAX Error:", status, error);
-                alertValidationError("An error occurred while adding the bundle to the cart.");
-            },
-            complete: function() {
-                console.log("AJAX complete: request finished");
             }
         });
-        return false;
+
+        // Aggiorna l'elemento HTML che mostra il totale
+        if (bundleTotalDisplay) {
+            bundleTotalDisplay.innerText = currentTotal.toFixed(2); // Formatta a 2 decimali
+        } else {
+            console.warn("Elemento 'bundle-total-display' non trovato. Impossibile aggiornare il totale.");
+        }
+    }
+
+    // 3. Funzione per verificare il numero minimo di selezioni e mostrare/nascondere il messaggio
+    function checkMinSelections() {
+        const selectedCount = Array.from(bundleCheckboxes).filter(checkbox => checkbox.checked).length;
+
+        if (selectedCount < MIN_SELECTIONS_REQUIRED) {
+            if (warningMessageContainer) {
+                warningMessageContainer.innerText = `Devi selezionare almeno ${MIN_SELECTIONS_REQUIRED} ingredienti per creare il tuo profumo.`;
+                warningMessageContainer.style.display = 'block'; // Mostra il messaggio
+            } else {
+                console.warn("Elemento 'bundle-warning-message' non trovato. Impossibile mostrare il messaggio di avviso.");
+                // Fallback: Se non hai un container specifico, potresti usare un alert per debug
+                // alert(`Devi selezionare almeno ${MIN_SELECTIONS_REQUIRED} ingredienti.`);
+            }
+            return false; // Indica che le selezioni non sono sufficienti
+        } else {
+            if (warningMessageContainer) {
+                warningMessageContainer.style.display = 'none'; // Nasconde il messaggio
+            }
+            return true; // Indica che le selezioni sono sufficienti
+        }
+    }
+
+    // --- Inizializzazione e Listener degli eventi ---
+
+    // Aggiungi un event listener per ogni checkbox
+    // Questo è il metodo preferito e più robusto per gestire gli eventi.
+    // Si attiva ogni volta che lo stato di una checkbox cambia.
+    bundleCheckboxes.forEach(checkbox => {
+        checkbox.addEventListener('change', function() {
+            updateBundleTotal();    // Aggiorna il totale
+            checkMinSelections();   // Controlla il numero di selezioni
+        });
     });
-}); 
+
+    // Aggiungi un event listener per il pulsante "Aggiungi al carrello"
+    if (addToCartButton) {
+        addToCartButton.addEventListener('click', function(event) {
+            // Impedisci il comportamento predefinito del form (ricaricamento della pagina)
+            event.preventDefault();
+
+            // Prima di reindirizzare, controlla le selezioni
+            if (checkMinSelections()) {
+                // Se il numero minimo è raggiunto, reindirizza al carrello
+                window.location.href = CART_URL;
+            }
+            // Se non è raggiunto, checkMinSelections() avrà già mostrato il messaggio di avviso
+            // e il preventDefault() impedirà il reindirizzamento.
+        });
+    } else {
+        console.warn("Pulsante 'add-to-cart-button' non trovato. Assicurati che il selettore sia corretto.");
+    }
+
+    // Esegui le funzioni all'avvio della pagina
+    // Questo è utile se ci sono checkbox pre-selezionate al caricamento della pagina,
+    // o se un utente ricarica la pagina con selezioni già fatte.
+    updateBundleTotal();
+    checkMinSelections();
+});
