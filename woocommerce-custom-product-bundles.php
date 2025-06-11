@@ -3,10 +3,6 @@ defined( 'ABSPATH' ) OR exit;
 /**
  * Plugin Name: WooCommerce Custom Product Bundles
  * Description: WooCommerce Custom Product Bundles view.
- * Author:      ThemeHiGH
- * Version:     1.0.1
- * Author URI:  http://www.themehigh.com
- * Plugin URI:  http://www.themehigh.com
  * Text Domain: woocommerce-custom-product-bundles
  * Domain Path: /languages
  */
@@ -32,11 +28,74 @@ add_filter(
 add_action('wp_enqueue_scripts', 'thps_woo_custom_product_bundles_enqueue_scripts');
 function thps_woo_custom_product_bundles_enqueue_scripts() {
 	wp_enqueue_style('thps-woo-custom-product-bundle-style', plugins_url('assets/css/thps-woo-custom-product-bundle27.css', __FILE__), array(), '1.0.0');
-	wp_enqueue_script('thps-woo-custom-product-bundles-script', plugins_url('assets/js/thps-woo-custom-product-bundle23.js', __FILE__), array('jquery', 'jquery-ui-dialog', 'wc-add-to-cart'), '1.0.0', true);
+	wp_enqueue_script('thps-woo-custom-product-bundles-script', plugins_url('assets/js/thps-woo-custom-product-bundle25.js', __FILE__), array('jquery', 'jquery-ui-dialog', 'wc-add-to-cart'), '1.0.0', true);
 //	wp_register_script('google-recaptcha', "https://www.google.com/recaptcha/api.js");
 }
 
+/**
+ * Funzione per aggiungere l'elemento di visualizzazione del totale del bundle.
+ * Puoi cambiare l'hook 'woocommerce_single_product_summary' a seconda di dove vuoi che appaia.
+ * Altri hook utili potrebbero essere:
+ * - woocommerce_before_add_to_cart_button
+ * - woocommerce_after_add_to_cart_button
+ * Considera che il tuo plugin potrebbe generare il proprio layout che ignora questi hook.
+ * Se non funziona, dovrai inserire questo HTML direttamente nella funzione del tuo plugin
+ * che genera il form del bundle.
+ */
+add_action( 'woocommerce_before_add_to_cart_button', 'thps_add_bundle_total_display', 15 ); // Esempio: prima del pulsante Aggiungi al Carrello
+function thps_add_bundle_total_display() {
+    // Non generare l'HTML se non siamo su una pagina di prodotto singola o se non è il tipo di prodotto gestito dal tuo plugin
+    if ( ! is_product() ) {
+        return;
+    }
+    ?>
+    <div class="bundle-total-wrapper" style="margin-bottom: 15px; font-size: 1.2em; font-weight: bold;">
+        Totale Composto: <span id="bundle-total-display">0.00</span> €
+    </div>
+    <?php
+}
 
+/**
+ * Funzione per aggiungere l'elemento del messaggio di avviso del bundle.
+ * Posizionalo dove ha senso mostrare l'avviso all'utente.
+ * 'woocommerce_before_add_to_cart_button' è un buon punto, ma puoi sperimentare.
+ * Anche qui, se non funziona, dovrai inserire questo HTML direttamente nella funzione del tuo plugin
+ * che genera il form del bundle.
+ */
+add_action( 'woocommerce_before_add_to_cart_button', 'thps_add_bundle_warning_message', 10 ); // Esempio: prima del pulsante Aggiungi al Carrello
+function thps_add_bundle_warning_message() {
+    if ( ! is_product() ) {
+        return;
+    }
+    ?>
+    <p id="bundle-warning-message" style="display:none; color: red; font-weight: bold; margin-top: 10px; margin-bottom: 10px;"></p>
+    <?php
+}
+
+/**
+ * Funzione per aggiungere la classe 'add-to-cart-button' al pulsante standard di WooCommerce "Aggiungi al carrello".
+ * Questo hook filtra gli attributi del pulsante "Aggiungi al carrello" standard.
+ * Se il tuo pulsante è custom e non usa questo hook (molto probabile per un custom bundle),
+ * dovrai modificarlo direttamente nel tuo template PHP del bundle.
+ */
+add_filter( 'woocommerce_loop_add_to_cart_args', 'thps_add_add_to_cart_button_class_loop', 10, 2 );
+add_filter( 'woocommerce_product_add_to_cart_args', 'thps_add_add_to_cart_button_class_single', 10, 2 );
+
+function thps_add_add_to_cart_button_class_loop( $args, $product ) {
+    if ( ! isset( $args['class'] ) ) {
+        $args['class'] = '';
+    }
+    $args['class'] .= ' add-to-cart-button';
+    return $args;
+}
+
+function thps_add_add_to_cart_button_class_single( $args, $product ) {
+    if ( ! isset( $args['class'] ) ) {
+        $args['class'] = '';
+    }
+    $args['class'] .= ' add-to-cart-button';
+    return $args;
+}
 
 function thps_woo_custom_product_bundles_scripts() {
 	wp_enqueue_style  ('thps-woo-custom-product-bundles-style');
