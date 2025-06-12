@@ -95,6 +95,21 @@ function thps_add_bundle_warning_message() {
     <?php
 }
 
+// INIZIO: NUOVE FUNZIONI PER GENERARE L'HTML DEL TOTALE E DELL'AVVISO
+function thps_get_bundle_total_display_html() {
+    return '
+    <div class="bundle-total-wrapper" style="margin-bottom: 15px; font-size: 1.2em; font-weight: bold;">
+        Totale Composto: <span id="bundle_total_display">0.00</span> €
+    </div>'; // NOTA: ho usato l'underscore qui per coerenza con il JS
+}
+
+function thps_get_bundle_warning_message_html() {
+    return '
+    <p id="bundle_warning_message" style="display:none; color: red; font-weight: bold; margin-top: 10px; margin-bottom: 10px;"></p>'; // NOTA: ho usato l'underscore qui per coerenza con il JS
+}
+// FINE: NUOVE FUNZIONI PER GENERARE L'HTML DEL TOTALE E DELL'AVVISO
+
+
 /**
  * Funzione per aggiungere la classe 'add-to-cart-button' al pulsante standard di WooCommerce "Aggiungi al carrello".
  * Questo hook filtra gli attributi del pulsante "Aggiungi al carrello" standard.
